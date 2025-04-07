@@ -1,35 +1,16 @@
-import json
-from datetime import datetime
 
-import requests
-from decouple import config
-from django.db.models import Sum
-from django.shortcuts import render
-from django.utils.timezone import make_aware
-
-# Create your views here.
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import User, Category, Transaction
-from .serializers import TransactionSerializer
 from .utils import interpretar_mensagem, formatar_resposta_registro, formatar_resposta_consulta
-from django.db.models import Sum
-
-
 import json
 from datetime import datetime
 from django.utils.timezone import make_aware
 from django.db.models import Sum
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 import requests
 from decouple import config
 
 from .models import User, Category, Transaction
 from .serializers import TransactionSerializer
-from .interpretar_mensagem import interpretar_mensagem
 from .utils import formatar_resposta_registro, formatar_resposta_consulta
 
 
