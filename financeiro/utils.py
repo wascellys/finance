@@ -71,7 +71,7 @@ def formatar_resposta_registro(transacao):
 def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=None, tipo=None):
 
     if not transacoes:
-        return "❌ *Nenhum registro encontrado para este período.*.*"
+        return "❌ *Nenhum registro encontrado para este período*"
     total = sum([t.amount for t in transacoes])
     inicio = data_inicial.strftime("%d/%m/%Y")
     fim = data_final.strftime("%d/%m/%Y")
