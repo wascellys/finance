@@ -109,7 +109,7 @@ class InterpretarTransacaoView(APIView):
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
 
-            requests.post(f"{config('APIKEY')}/Send", data=data, headers=headers)
+            requests.post(f"{config('URL_WHATSGW')}/Send", data=data, headers=headers)
 
             return Response({"status": "mensagem enviada com sucesso"})
 
