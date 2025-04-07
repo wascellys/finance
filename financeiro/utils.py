@@ -1,7 +1,10 @@
-from datetime import date
+from datetime import datetime
+
 import matplotlib.pyplot as plt
 import io
 import base64
+
+import pytz
 from decouple import config
 import openai
 
@@ -9,7 +12,9 @@ openai.api_key = config('APIKEY')
 
 
 def interpretar_mensagem(mensagem_usuario):
-    data_hoje = date.today().isoformat()
+    # Corrige a data para o fuso horário de Brasília
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    data_hoje = datetime.now(fuso_brasilia).date().isoformat()
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -37,7 +42,7 @@ def interpretar_mensagem(mensagem_usuario):
                     "- Sempre retorne datas no formato yyyy-mm-dd\n"
                     "- Sempre use letras minúsculas nas categorias\n"
                     "- Use \"tipo_lancamento\" mesmo nas consultas, se for possível inferir pelo contexto\n"
-                    "- A data de hoje deve ser considerada como sendo {data_hoje}"
+                    f"- A data de hoje deve ser considerada como sendo {data_hoje}"
                 )
             },
             {"role": "user", "content": mensagem_usuario}
@@ -45,7 +50,6 @@ def interpretar_mensagem(mensagem_usuario):
     )
 
     return response['choices'][0]['message']['content']
-
 
 def formatar_resposta_registro(transacao):
     tipo = transacao.tipo  # receita ou despesa

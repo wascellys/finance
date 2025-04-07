@@ -1,4 +1,3 @@
-
 from .utils import interpretar_mensagem, formatar_resposta_registro, formatar_resposta_consulta
 import json
 from datetime import datetime
@@ -29,6 +28,8 @@ class InterpretarTransacaoView(APIView):
             # Interpreta a mensagem
             interpretado_raw = interpretar_mensagem(description)
             interpretado = json.loads(interpretado_raw)
+
+            print("INTERPRETADO:", interpretado)
 
             if interpretado["tipo"] == "irrelevante":
                 return Response({"error": "Mensagem irrelevante."}, status=400)
@@ -79,7 +80,8 @@ class InterpretarTransacaoView(APIView):
                 total = transacoes.aggregate(total_gasto=Sum("amount"))["total_gasto"] or 0
                 lista = TransactionSerializer(transacoes, many=True).data
 
-                mensagem = formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria_nome, tipo_lancamento)
+                mensagem = formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria_nome,
+                                                      tipo_lancamento)
 
             else:
                 return Response({"error": "Tipo de ação não reconhecido."}, status=400)
@@ -101,7 +103,7 @@ class InterpretarTransacaoView(APIView):
 
             requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=headers)
 
-            return Response({"status": "mensagem enviada com sucesso"})
+            return Response(data=mensagem, status=200)
 
         except Exception as e:
             return Response({"error": f"Erro ao interpretar ou processar mensagem: {str(e)}"}, status=500)
