@@ -96,7 +96,7 @@ class InterpretarTransacaoView(APIView):
 
             # Enviar resposta via WhatsGw
             data = {
-                "apiKey": "f8e8a1e6-9882-4301-82f1-39ea90e92166",
+                "apiKey": config('APIKEY_WG'),
                 "phone_number": "5588988287586",  # Seu número de envio (fixo)
                 "contact_phone_number": phone_number,
                 "contact_name": nome_contato or phone_number,
