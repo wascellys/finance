@@ -1,9 +1,7 @@
 from datetime import datetime
-
 import matplotlib.pyplot as plt
 import io
 import base64
-
 import pytz
 from decouple import config
 import openai
@@ -12,9 +10,34 @@ openai.api_key = config('APIKEY')
 
 
 def interpretar_mensagem(mensagem_usuario):
-    # Corrige a data para o fuso horário de Brasília
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
     data_hoje = datetime.now(fuso_brasilia).date().isoformat()
+
+    categorias_financeiras = """
+    Use apenas as seguintes categorias e subcategorias:
+
+    - habitacao > aluguel, condominio
+    - contas_residenciais > energia, agua, telefone, internet
+    - supermercado
+    - alimentacao > refeicoes e lanches
+    - lazer > cinema e teatro, festas e eventos, hobbies
+    - assinaturas_e_servicos > streamings, aplicativos
+    - compras > roupas e acessorios, compras diversas, eletronicos
+    - cuidados_pessoais > higiene pessoal, salao de beleza, barbearia
+    - dividas_e_emprestimos > financiamentos, emprestimo
+    - educacao > escola/faculdade, material escolar, cursos extracurriculares
+    - familia_e_filhos > mesada, ajuda de custo
+    - impostos_e_taxas > taxas bancarias, iptu, ipva, anuidade de cartao
+    - investimentos > reserva de emergencia, aposentadoria, objetivos
+    - presentes_e_doacoes > dizimo, presentes, doacoes
+    - saude > medicamentos, plano de saude, consultas particulares
+    - seguros > seguro de vida, seguro automotivo, seguro residencial
+    - despesas_de_trabalho > custos diversos, despesas operacionais, material de escritorio
+    - transporte > combustivel, manutencao, taxi/transporte por aplicativo, transporte publico, estacionamento
+
+    Sempre retorne a subcategoria como o valor da chave "categoria".
+    Se o usuario mencionar uma categoria geral (ex: transporte, saude), use o nome da categoria principal.
+    """
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -41,8 +64,10 @@ def interpretar_mensagem(mensagem_usuario):
                     "- Se o usuário usar palavras como *recebi*, *entrada*, *ganhei*, associe a \"tipo_lancamento\": \"receita\"\n"
                     "- Sempre retorne datas no formato yyyy-mm-dd\n"
                     "- Sempre use letras minúsculas nas categorias\n"
+                    "- Sempre retorne a subcategoria como valor da chave \"categoria\"\n"
                     "- Use \"tipo_lancamento\" mesmo nas consultas, se for possível inferir pelo contexto\n"
-                    f"- A data de hoje deve ser considerada como sendo {data_hoje}"
+                    f"- A data de hoje deve ser considerada como sendo {data_hoje}\n\n"
+                    f"{categorias_financeiras}"
                 )
             },
             {"role": "user", "content": mensagem_usuario}
@@ -50,6 +75,7 @@ def interpretar_mensagem(mensagem_usuario):
     )
 
     return response['choices'][0]['message']['content']
+
 
 def formatar_resposta_registro(transacao):
     tipo = transacao.tipo  # receita ou despesa
@@ -59,7 +85,8 @@ def formatar_resposta_registro(transacao):
     data = transacao.created_at.strftime("%d/%m/%Y")
 
     return (
-        "✅ *Transação registrada!*\n"
+        "✅ *Transação registrada!*\n\n"
+        f"_Código:_ *#{transacao.code}*\n"
         f"_Tipo:_ *{tipo.upper()}*\n"
         f"_Valor:_ *{valor}*\n"
         f"_Categoria:_ *{categoria.upper()}*\n"
@@ -69,9 +96,8 @@ def formatar_resposta_registro(transacao):
 
 
 def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=None, tipo=None):
-
     if not transacoes:
-        return "❌ *Nenhum registro encontrado para este período*"
+        return "❌ *Nenhum Registro Encontrado Para Este Período*"
     total = sum([t.amount for t in transacoes])
     inicio = data_inicial.strftime("%d/%m/%Y")
     fim = data_final.strftime("%d/%m/%Y")
@@ -97,25 +123,17 @@ def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=N
 
 
 def gerar_grafico_base64(transacoes):
-    """
-    Gera um gráfico de barras com os valores das transações por categoria
-    e retorna a imagem codificada em base64.
-    """
-
-    # Agrupa os valores por categoria
     categorias = {}
     for t in transacoes:
         cat = t.category.name
         categorias[cat] = categorias.get(cat, 0) + float(t.amount)
 
     if not categorias:
-        return None  # Sem dados
+        return None
 
-    # Dados para o gráfico
     labels = list(categorias.keys())
     valores = list(categorias.values())
 
-    # Cria a imagem
     fig, ax = plt.subplots()
     ax.bar(labels, valores)
     ax.set_title('Gastos por Categoria')
@@ -123,15 +141,12 @@ def gerar_grafico_base64(transacoes):
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    # Salva em memória
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
 
-    # Codifica em base64
     imagem_base64 = base64.b64encode(buffer.read()).decode('utf-8')
 
-    # Limpa memória
     plt.close()
 
     return imagem_base64
