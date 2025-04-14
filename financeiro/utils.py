@@ -14,29 +14,29 @@ def interpretar_mensagem(mensagem_usuario):
     data_hoje = datetime.now(fuso_brasilia).date().isoformat()
 
     categorias_financeiras = """
-    Use apenas as seguintes categorias e subcategorias:
+    Use apenas as seguintes categorias e subcategorias (com acentuação e capitalização corretas):
 
-    - habitacao > aluguel, condominio
-    - contas_residenciais > energia, agua, telefone, internet
-    - supermercado
-    - alimentacao > refeicoes e lanches
-    - lazer > cinema e teatro, festas e eventos, hobbies
-    - assinaturas_e_servicos > streamings, aplicativos
-    - compras > roupas e acessorios, compras diversas, eletronicos
-    - cuidados_pessoais > higiene pessoal, salao de beleza, barbearia
-    - dividas_e_emprestimos > financiamentos, emprestimo
-    - educacao > escola/faculdade, material escolar, cursos extracurriculares
-    - familia_e_filhos > mesada, ajuda de custo
-    - impostos_e_taxas > taxas bancarias, iptu, ipva, anuidade de cartao
-    - investimentos > reserva de emergencia, aposentadoria, objetivos
-    - presentes_e_doacoes > dizimo, presentes, doacoes
-    - saude > medicamentos, plano de saude, consultas particulares
-    - seguros > seguro de vida, seguro automotivo, seguro residencial
-    - despesas_de_trabalho > custos diversos, despesas operacionais, material de escritorio
-    - transporte > combustivel, manutencao, taxi/transporte por aplicativo, transporte publico, estacionamento
+    - Habitação > Aluguel, Condomínio
+    - Contas residenciais > Energia, Água, Telefone, Internet
+    - Supermercado
+    - Alimentação > Refeições e lanches
+    - Lazer > Cinema e teatro, Festas e eventos, Hobbies
+    - Assinaturas e serviços > Streamings, Aplicativos
+    - Compras > Roupas e acessórios, Compras diversas, Eletrônicos
+    - Cuidados pessoais > Higiene pessoal, Salão de beleza, Barbearia
+    - Dívidas e empréstimos > Financiamentos, Empréstimo
+    - Educação > Escola/Faculdade, Material escolar, Cursos extracurriculares
+    - Família e filhos > Mesada, Ajuda de custo
+    - Impostos e taxas > Taxas bancárias, IPTU, IPVA, Anuidade de cartão
+    - Investimentos > Reserva de emergência, Aposentadoria, Objetivos
+    - Presentes e doações > Dízimo, Presentes, Doações
+    - Saúde > Medicamentos, Plano de saúde, Consultas particulares
+    - Seguros > Seguro de vida, Seguro automotivo, Seguro residencial
+    - Despesas de trabalho > Custos diversos, Despesas operacionais, Material de escritório
+    - Transporte > Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento
 
     Sempre retorne a subcategoria como o valor da chave "categoria".
-    Se o usuario mencionar uma categoria geral (ex: transporte, saude), use o nome da categoria principal.
+    Se o usuário mencionar uma categoria geral (ex: Transporte, Saúde), use o nome da categoria principal.
     """
 
     response = openai.ChatCompletion.create(
@@ -51,10 +51,10 @@ def interpretar_mensagem(mensagem_usuario):
                     "Sempre responda em JSON com as seguintes possibilidades:\n\n"
 
                     "1. Quando for um *registro* de gasto ou receita, responda com:\n"
-                    "{\"tipo\": \"registro\", \"valor\": 1200, \"categoria\": \"salario\", \"descricao\": \"recebi meu salário\", \"data\": \"2025-04-04\", \"tipo_lancamento\": \"receita\"}\n\n"
+                    "{\"tipo\": \"registro\", \"valor\": 1200, \"categoria\": \"IPVA\", \"descricao\": \"paguei o IPVA\", \"data\": \"2025-04-04\", \"tipo_lancamento\": \"despesa\"}\n\n"
 
                     "2. Quando for uma *consulta*, responda com:\n"
-                    "{\"tipo\": \"consulta\", \"data_inicial\": \"2025-04-01\", \"data_final\": \"2025-04-05\", \"categoria\": \"alimentacao\", \"tipo_lancamento\": \"despesa\" (opcional)}\n\n"
+                    "{\"tipo\": \"consulta\", \"data_inicial\": \"2025-04-01\", \"data_final\": \"2025-04-05\", \"categoria\": \"Plano de saúde\", \"tipo_lancamento\": \"despesa\" (opcional)}\n\n"
 
                     "3. Se a mensagem não for sobre finanças, retorne:\n"
                     "{\"tipo\": \"irrelevante\"}\n\n"
@@ -63,7 +63,7 @@ def interpretar_mensagem(mensagem_usuario):
                     "- Se o usuário usar palavras como *gastos*, *despesas*, *gastei*, associe a \"tipo_lancamento\": \"despesa\"\n"
                     "- Se o usuário usar palavras como *recebi*, *entrada*, *ganhei*, associe a \"tipo_lancamento\": \"receita\"\n"
                     "- Sempre retorne datas no formato yyyy-mm-dd\n"
-                    "- Sempre use letras minúsculas nas categorias\n"
+                    "- Sempre use o nome exato da categoria ou subcategoria, com acentuação e capitalização corretas\n"
                     "- Sempre retorne a subcategoria como valor da chave \"categoria\"\n"
                     "- Use \"tipo_lancamento\" mesmo nas consultas, se for possível inferir pelo contexto\n"
                     f"- A data de hoje deve ser considerada como sendo {data_hoje}\n\n"

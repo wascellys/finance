@@ -2,14 +2,17 @@ from .utils import interpretar_mensagem, formatar_resposta_registro, formatar_re
 import json
 from datetime import datetime
 from django.utils.timezone import make_aware, now
-from django.db.models import Sum
 from rest_framework.views import APIView
 from rest_framework.response import Response
+import unicodedata
 import requests
 from decouple import config
 
 from .models import User, Category, MainCategory, Transaction
-from .serializers import TransactionSerializer
+
+
+def normalizar(texto):
+    return unicodedata.normalize('NFKD', texto).encode('ASCII', 'ignore').decode('ASCII').lower()
 
 
 class InterpretarTransacaoView(APIView):
@@ -30,6 +33,22 @@ class InterpretarTransacaoView(APIView):
             print("INTERPRETADO:", interpretado)
 
             if interpretado["tipo"] == "irrelevante":
+                resposta = {
+                    "apiKey": config("APIKEY_WG"),
+                    "phone_number": data.get("phone_number"),
+                    "contact_phone_number": phone_number,
+                    "contact_name": nome_contato or phone_number,
+                    "chat_type": "user",
+                    "message_type": "text",
+                    "message_body": "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente.",
+                }
+
+                headers = {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+
+                requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=headers)
+
                 return Response({"error": "Mensagem irrelevante."}, status=400)
 
             user, created = User.objects.get_or_create(phone_number=phone_number)
@@ -38,8 +57,16 @@ class InterpretarTransacaoView(APIView):
                 user.save()
 
             if interpretado["tipo"] == "registro":
-                categoria_nome = interpretado["categoria"].strip().lower()
-                categoria, _ = Category.objects.get_or_create(name=categoria_nome)
+                categoria_nome_normalizada = normalizar(interpretado["categoria"])
+                categoria = None
+
+                for cat in Category.objects.all():
+                    if normalizar(cat.name) == categoria_nome_normalizada:
+                        categoria = cat
+                        break
+
+                if not categoria:
+                    categoria = Category.objects.create(name=interpretado["categoria"])
 
                 tipo_lancamento = interpretado.get("tipo_lancamento", "despesa")
                 data_transacao = interpretado.get("data")
@@ -69,11 +96,21 @@ class InterpretarTransacaoView(APIView):
 
                 categoria_nome = interpretado.get("categoria")
                 if categoria_nome:
-                    if Category.objects.filter(name__iexact=categoria_nome).exists():
-                        transacoes = transacoes.filter(category__name__iexact=categoria_nome)
-                    elif MainCategory.objects.filter(name__iexact=categoria_nome).exists():
-                        subcategorias = Category.objects.filter(main_category__name__iexact=categoria_nome)
-                        transacoes = transacoes.filter(category__in=subcategorias)
+                    categoria_nome_normalizada = normalizar(categoria_nome)
+                    encontrada = False
+
+                    for cat in Category.objects.all():
+                        if normalizar(cat.name) == categoria_nome_normalizada:
+                            transacoes = transacoes.filter(category=cat)
+                            encontrada = True
+                            break
+
+                    if not encontrada:
+                        for mc in MainCategory.objects.all():
+                            if normalizar(mc.name) == categoria_nome_normalizada:
+                                subcategorias = Category.objects.filter(main_category=mc)
+                                transacoes = transacoes.filter(category__in=subcategorias)
+                                break
 
                 tipo_lancamento = interpretado.get("tipo_lancamento")
                 if tipo_lancamento:
@@ -82,7 +119,6 @@ class InterpretarTransacaoView(APIView):
                 mensagem = formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria_nome,
                                                       tipo_lancamento)
 
-                # Se usuário solicitar gráfico
                 if interpretado.get("grafico", False):
                     imagem_base64 = gerar_grafico_base64(transacoes)
                     if imagem_base64:
@@ -120,4 +156,20 @@ class InterpretarTransacaoView(APIView):
             return Response(data=mensagem, status=200)
 
         except Exception as e:
+
+            resposta = {
+                "apiKey": config("APIKEY_WG"),
+                "phone_number": data.get("phone_number"),
+                "contact_phone_number": phone_number,
+                "contact_name": nome_contato or phone_number,
+                "chat_type": "user",
+                "message_type": "text",
+                "message_body": "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente.",
+            }
+
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+
+            requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=headers)
             return Response({"error": f"Erro ao interpretar ou processar mensagem: {str(e)}"}, status=500)
