@@ -11,7 +11,7 @@
   "model": "financeiro.category",
   "pk": 28,
   "fields": {
-    "name": "CondomÌnio",
+    "name": "Condom√≠nio",
     "main_category": 1
   }
 },
@@ -27,7 +27,7 @@
   "model": "financeiro.category",
   "pk": 30,
   "fields": {
-    "name": "¡gua",
+    "name": "√Ågua",
     "main_category": 3
   }
 },
@@ -51,7 +51,7 @@
   "model": "financeiro.category",
   "pk": 33,
   "fields": {
-    "name": "RefeiÁıes e lanches",
+    "name": "Refei√ß√µes e lanches",
     "main_category": 5
   }
 },
@@ -99,7 +99,7 @@
   "model": "financeiro.category",
   "pk": 39,
   "fields": {
-    "name": "Roupas e acessÛrios",
+    "name": "Roupas e acess√≥rios",
     "main_category": 8
   }
 },
@@ -115,7 +115,7 @@
   "model": "financeiro.category",
   "pk": 41,
   "fields": {
-    "name": "EletrÙnicos",
+    "name": "Eletr√¥nicos",
     "main_category": 8
   }
 },
@@ -131,7 +131,7 @@
   "model": "financeiro.category",
   "pk": 43,
   "fields": {
-    "name": "Sal„o de beleza",
+    "name": "Sal√£o de beleza",
     "main_category": 9
   }
 },
@@ -155,7 +155,7 @@
   "model": "financeiro.category",
   "pk": 46,
   "fields": {
-    "name": "EmprÈstimo",
+    "name": "Empr√©stimo",
     "main_category": 10
   }
 },
@@ -203,7 +203,7 @@
   "model": "financeiro.category",
   "pk": 52,
   "fields": {
-    "name": "Taxas banc·rias",
+    "name": "Taxas banc√°rias",
     "main_category": 13
   }
 },
@@ -227,7 +227,7 @@
   "model": "financeiro.category",
   "pk": 55,
   "fields": {
-    "name": "Anuidade de cart„o",
+    "name": "Anuidade de cart√£o",
     "main_category": 13
   }
 },
@@ -235,7 +235,7 @@
   "model": "financeiro.category",
   "pk": 56,
   "fields": {
-    "name": "Reserva de emergÍncia",
+    "name": "Reserva de emerg√™ncia",
     "main_category": 14
   }
 },
@@ -259,7 +259,7 @@
   "model": "financeiro.category",
   "pk": 59,
   "fields": {
-    "name": "DÌzimo",
+    "name": "D√≠zimo",
     "main_category": 15
   }
 },
@@ -275,7 +275,7 @@
   "model": "financeiro.category",
   "pk": 61,
   "fields": {
-    "name": "DoaÁıes",
+    "name": "Doa√ß√µes",
     "main_category": 15
   }
 },
@@ -291,7 +291,7 @@
   "model": "financeiro.category",
   "pk": 63,
   "fields": {
-    "name": "Plano de sa˙de",
+    "name": "Plano de sa√∫de",
     "main_category": 16
   }
 },
@@ -347,7 +347,7 @@
   "model": "financeiro.category",
   "pk": 70,
   "fields": {
-    "name": "Material de escritÛrio",
+    "name": "Material de escrit√≥rio",
     "main_category": 18
   }
 },
@@ -355,7 +355,7 @@
   "model": "financeiro.category",
   "pk": 71,
   "fields": {
-    "name": "CombustÌvel",
+    "name": "Combust√≠vel",
     "main_category": 19
   }
 },
@@ -363,7 +363,7 @@
   "model": "financeiro.category",
   "pk": 72,
   "fields": {
-    "name": "ManutenÁ„o",
+    "name": "Manuten√ß√£o",
     "main_category": 19
   }
 },
@@ -371,7 +371,7 @@
   "model": "financeiro.category",
   "pk": 73,
   "fields": {
-    "name": "T·xi/Transporte por aplicativo",
+    "name": "T√°xi/Transporte por aplicativo",
     "main_category": 19
   }
 },
@@ -379,7 +379,7 @@
   "model": "financeiro.category",
   "pk": 74,
   "fields": {
-    "name": "Transporte p˙blico",
+    "name": "Transporte p√∫blico",
     "main_category": 19
   }
 },
@@ -395,7 +395,7 @@
   "model": "financeiro.maincategory",
   "pk": 1,
   "fields": {
-    "name": "HABITA«√O"
+    "name": "HABITA√á√ÉO"
   }
 },
 {
@@ -416,7 +416,7 @@
   "model": "financeiro.maincategory",
   "pk": 5,
   "fields": {
-    "name": "ALIMENTA«√O"
+    "name": "ALIMENTA√á√ÉO"
   }
 },
 {
@@ -430,7 +430,7 @@
   "model": "financeiro.maincategory",
   "pk": 7,
   "fields": {
-    "name": "ASSINATURAS E SERVI«OS"
+    "name": "ASSINATURAS E SERVI√áOS"
   }
 },
 {
@@ -451,21 +451,21 @@
   "model": "financeiro.maincategory",
   "pk": 10,
   "fields": {
-    "name": "DÕVIDAS E EMPR…STIMOS"
+    "name": "D√çVIDAS E EMPR√âSTIMOS"
   }
 },
 {
   "model": "financeiro.maincategory",
   "pk": 11,
   "fields": {
-    "name": "EDUCA«√O"
+    "name": "EDUCA√á√ÉO"
   }
 },
 {
   "model": "financeiro.maincategory",
   "pk": 12,
   "fields": {
-    "name": "FAMÕLIA E FILHOS"
+    "name": "FAM√çLIA E FILHOS"
   }
 },
 {
@@ -486,14 +486,14 @@
   "model": "financeiro.maincategory",
   "pk": 15,
   "fields": {
-    "name": "PRESENTES E DOA«’ES"
+    "name": "PRESENTES E DOA√á√ïES"
   }
 },
 {
   "model": "financeiro.maincategory",
   "pk": 16,
   "fields": {
-    "name": "SA⁄DE"
+    "name": "SA√öDE"
   }
 },
 {
