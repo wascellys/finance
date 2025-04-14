@@ -35,7 +35,7 @@ class InterpretarTransacaoView(APIView):
             if interpretado["tipo"] == "irrelevante":
                 resposta = {
                     "apiKey": config("APIKEY_WG"),
-                    "phone_number": data.get("phone_number"),
+                    "phone_number": config("BOT_NUMBER"),
                     "contact_phone_number": phone_number,
                     "contact_name": nome_contato or phone_number,
                     "chat_type": "user",
@@ -124,7 +124,7 @@ class InterpretarTransacaoView(APIView):
                     if imagem_base64:
                         resposta_grafico = {
                             "apiKey": config("APIKEY_WG"),
-                            "phone_number": data.get("phone_number"),
+                            "phone_number": config("BOT_NUMBER"),
                             "contact_phone_number": phone_number,
                             "contact_name": nome_contato or phone_number,
                             "chat_type": "user",
@@ -139,7 +139,7 @@ class InterpretarTransacaoView(APIView):
 
             resposta = {
                 "apiKey": config("APIKEY_WG"),
-                "phone_number": data.get("phone_number"),
+                "phone_number": config("BOT_NUMBER"),
                 "contact_phone_number": phone_number,
                 "contact_name": nome_contato or phone_number,
                 "chat_type": "user",
@@ -159,7 +159,7 @@ class InterpretarTransacaoView(APIView):
 
             resposta = {
                 "apiKey": config("APIKEY_WG"),
-                "phone_number": data.get("phone_number"),
+                "phone_number": config("BOT_NUMBER"),
                 "contact_phone_number": phone_number,
                 "contact_name": nome_contato or phone_number,
                 "chat_type": "user",
