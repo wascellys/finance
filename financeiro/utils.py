@@ -106,9 +106,9 @@ def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=N
     header = (
         "📊 *Resumo de transações*\n"
         f"_Período:_ *{inicio}* até *{fim}*\n"
-        f"_Categoria:_ *{categoria if categoria else 'todas'}*\n"
+        f"_Categoria:_ *{categoria if categoria else 'TODAS'}*\n"
         f"_Tipo:_ *{tipo if tipo else 'todas'}*\n"
-        f"_Total:_ *{total_str}*\n\n"
+        f"_Total:_ *{total_str.upper()}*\n\n"
         "*Transações:* \n"
     )
 
