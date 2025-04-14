@@ -37,6 +37,7 @@ def interpretar_mensagem(mensagem_usuario):
 
     Sempre retorne a subcategoria como o valor da chave "categoria".
     Se o usuário mencionar uma categoria geral (ex: Transporte, Saúde), use o nome da categoria principal.
+    Caso o usuário mencione que deseja um gráfico, adicione "grafico": true na resposta JSON.
     """
 
     response = openai.ChatCompletion.create(
@@ -54,7 +55,7 @@ def interpretar_mensagem(mensagem_usuario):
                     "{\"tipo\": \"registro\", \"valor\": 1200, \"categoria\": \"IPVA\", \"descricao\": \"paguei o IPVA\", \"data\": \"2025-04-04\", \"tipo_lancamento\": \"despesa\"}\n\n"
 
                     "2. Quando for uma *consulta*, responda com:\n"
-                    "{\"tipo\": \"consulta\", \"data_inicial\": \"2025-04-01\", \"data_final\": \"2025-04-05\", \"categoria\": \"Plano de saúde\", \"tipo_lancamento\": \"despesa\" (opcional)}\n\n"
+                    "{\"tipo\": \"consulta\", \"data_inicial\": \"2025-04-01\", \"data_final\": \"2025-04-05\", \"categoria\": \"Plano de saúde\", \"tipo_lancamento\": \"despesa\", \"grafico\": true (caso solicitado)}\n\n"
 
                     "3. Se a mensagem não for sobre finanças, retorne:\n"
                     "{\"tipo\": \"irrelevante\"}\n\n"
@@ -78,7 +79,7 @@ def interpretar_mensagem(mensagem_usuario):
 
 
 def formatar_resposta_registro(transacao):
-    tipo = transacao.tipo  # receita ou despesa
+    tipo = transacao.tipo
     valor = f"R$ {transacao.amount:.2f}".replace('.', ',')
     categoria = transacao.category.name
     descricao = transacao.description
