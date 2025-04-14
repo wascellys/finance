@@ -129,10 +129,12 @@ class InterpretarTransacaoView(APIView):
                             "contact_name": nome_contato or phone_number,
                             "chat_type": "user",
                             "message_type": "image",
-                            "message_image": imagem_base64,
+                            "message_body": imagem_base64,
                         }
                         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
                         requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta_grafico, headers=headers)
+
+                        return Response(data=mensagem, status=200)
 
             else:
                 return Response({"error": "Tipo de ação não reconhecido."}, status=400)
