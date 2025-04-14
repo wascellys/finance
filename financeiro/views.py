@@ -134,7 +134,7 @@ class InterpretarTransacaoView(APIView):
                         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
                         requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta_grafico, headers=headers)
 
-                        return Response(data=mensagem, status=200)
+                        return Response(data={"message": "Gráfico gerado com sucesso!"}, status=200)
 
             else:
                 return Response({"error": "Tipo de ação não reconhecido."}, status=400)
