@@ -85,12 +85,13 @@ def formatar_resposta_registro(transacao):
     data = transacao.created_at.strftime("%d/%m/%Y")
 
     return (
-        f"✅ *Transação registrada!* #{transacao.code.upper()} \n\n"        
+        "✅ *Transação registrada!*\n\n"        
         f"_Tipo:_ *{tipo.upper()}*\n"
         f"_Valor:_ *{valor}*\n"
         f"_Categoria:_ *{categoria.upper()}*\n"
         f"_Descrição:_ `{descricao.capitalize()}`\n"
-        f"_Data:_ *{data}*"
+        f"_Data:_ *{data}*\n\n"
+        f"_Código:_ *#{transacao.code.upper()}*\n"
     )
 
 
