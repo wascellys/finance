@@ -130,6 +130,8 @@ class InterpretarTransacaoView(APIView):
                             "chat_type": "user",
                             "message_type": "image",
                             "message_body": imagem_base64,
+                            "message_body_filename": "file.png",
+                            "message_body_mimetype": "image/png",
                         }
                         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
                         requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta_grafico, headers=headers)

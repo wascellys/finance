@@ -135,19 +135,19 @@ def gerar_grafico_base64(transacoes):
     labels = list(categorias.keys())
     valores = list(categorias.values())
 
-    fig, ax = plt.subplots()
-    ax.bar(labels, valores)
+    plt.style.use('ggplot')
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.bar(labels, valores, color='#4B0082')
     ax.set_title('Gastos por Categoria')
     ax.set_ylabel('Valor (R$)')
+    ax.set_xlabel('Categoria')
     plt.xticks(rotation=45)
     plt.tight_layout()
 
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
-
     imagem_base64 = base64.b64encode(buffer.read()).decode('utf-8')
-
     plt.close()
 
     return imagem_base64
