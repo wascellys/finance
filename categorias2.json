@@ -1,0 +1,692 @@
+[
+{
+  "model": "financeiro.category",
+  "pk": 27,
+  "fields": {
+    "name": "Aluguel",
+    "main_category": 1
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 28,
+  "fields": {
+    "name": "Condomínio",
+    "main_category": 1
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 29,
+  "fields": {
+    "name": "Energia",
+    "main_category": 3
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 30,
+  "fields": {
+    "name": "Água",
+    "main_category": 3
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 31,
+  "fields": {
+    "name": "Telefone",
+    "main_category": 3
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 32,
+  "fields": {
+    "name": "Internet",
+    "main_category": 3
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 33,
+  "fields": {
+    "name": "Refeições e lanches",
+    "main_category": 5
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 34,
+  "fields": {
+    "name": "Cinema e teatro",
+    "main_category": 6
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 35,
+  "fields": {
+    "name": "Festas e eventos",
+    "main_category": 6
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 36,
+  "fields": {
+    "name": "Hobbies",
+    "main_category": 6
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 37,
+  "fields": {
+    "name": "Streamings",
+    "main_category": 7
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 38,
+  "fields": {
+    "name": "Aplicativos",
+    "main_category": 7
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 39,
+  "fields": {
+    "name": "Roupas e acessórios",
+    "main_category": 8
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 40,
+  "fields": {
+    "name": "Compras diversas",
+    "main_category": 8
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 41,
+  "fields": {
+    "name": "Eletrônicos",
+    "main_category": 8
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 42,
+  "fields": {
+    "name": "Higiene pessoal",
+    "main_category": 9
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 43,
+  "fields": {
+    "name": "Salão de beleza",
+    "main_category": 9
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 44,
+  "fields": {
+    "name": "Barbearia",
+    "main_category": 9
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 45,
+  "fields": {
+    "name": "Financiamentos",
+    "main_category": 10
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 46,
+  "fields": {
+    "name": "Empréstimo",
+    "main_category": 10
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 47,
+  "fields": {
+    "name": "Escola/Faculdade",
+    "main_category": 11
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 48,
+  "fields": {
+    "name": "Material escolar",
+    "main_category": 11
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 49,
+  "fields": {
+    "name": "Cursos extracurriculares",
+    "main_category": 11
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 50,
+  "fields": {
+    "name": "Mesada",
+    "main_category": 11
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 51,
+  "fields": {
+    "name": "Ajuda de custo",
+    "main_category": 12
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 52,
+  "fields": {
+    "name": "Taxas bancárias",
+    "main_category": 13
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 53,
+  "fields": {
+    "name": "IPTU",
+    "main_category": 13
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 54,
+  "fields": {
+    "name": "IPVA",
+    "main_category": 13
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 55,
+  "fields": {
+    "name": "Anuidade de cartão",
+    "main_category": 13
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 56,
+  "fields": {
+    "name": "Reserva de emergência",
+    "main_category": 14
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 57,
+  "fields": {
+    "name": "Aposentadoria",
+    "main_category": 14
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 58,
+  "fields": {
+    "name": "Objetivos",
+    "main_category": 14
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 59,
+  "fields": {
+    "name": "Dízimo",
+    "main_category": 15
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 60,
+  "fields": {
+    "name": "Presentes",
+    "main_category": 15
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 61,
+  "fields": {
+    "name": "Doações",
+    "main_category": 15
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 62,
+  "fields": {
+    "name": "Medicamentos",
+    "main_category": 16
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 63,
+  "fields": {
+    "name": "Plano de saúde",
+    "main_category": 16
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 64,
+  "fields": {
+    "name": "Consultas particulares",
+    "main_category": 16
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 65,
+  "fields": {
+    "name": "Seguro de vida",
+    "main_category": 17
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 66,
+  "fields": {
+    "name": "Seguro automotivo",
+    "main_category": 17
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 67,
+  "fields": {
+    "name": "Seguro residencial",
+    "main_category": 17
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 68,
+  "fields": {
+    "name": "Custos diversos",
+    "main_category": 18
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 69,
+  "fields": {
+    "name": "Despesas operacionais",
+    "main_category": 18
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 70,
+  "fields": {
+    "name": "Material de escritório",
+    "main_category": 18
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 71,
+  "fields": {
+    "name": "Combustível",
+    "main_category": 19
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 72,
+  "fields": {
+    "name": "Manutenção",
+    "main_category": 19
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 73,
+  "fields": {
+    "name": "Táxi/Transporte por aplicativo",
+    "main_category": 19
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 74,
+  "fields": {
+    "name": "Transporte público",
+    "main_category": 19
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 75,
+  "fields": {
+    "name": "Estacionamento",
+    "main_category": 19
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 76,
+  "fields": {
+    "name": "SALÁRIO/PRÓ-LABORE",
+    "main_category": 20
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 77,
+  "fields": {
+    "name": "FREELAS/ BÔNUS / COMISSÃO",
+    "main_category": 20
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 78,
+  "fields": {
+    "name": "13º SALÁRIO/ HORA EXTRA",
+    "main_category": 20
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 79,
+  "fields": {
+    "name": "RENDIMENTOS DE INVESTIMENTOS (CDBS, TESOURO, FUNDO",
+    "main_category": 21
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 80,
+  "fields": {
+    "name": "DIVIDENDOS DE AÇÕES E FIIS",
+    "main_category": 21
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 81,
+  "fields": {
+    "name": "ALUGUÉIS",
+    "main_category": 21
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 82,
+  "fields": {
+    "name": "ROYALTIES",
+    "main_category": 21
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 83,
+  "fields": {
+    "name": "BENS USADOS",
+    "main_category": 22
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 84,
+  "fields": {
+    "name": "MARKETPLACE",
+    "main_category": 22
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 85,
+  "fields": {
+    "name": "CASHBACK",
+    "main_category": 23
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 86,
+  "fields": {
+    "name": "PRÊMIOS",
+    "main_category": 23
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 87,
+  "fields": {
+    "name": "PRESENTES",
+    "main_category": 23
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 88,
+  "fields": {
+    "name": "MERCEARIA",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 89,
+  "fields": {
+    "name": "AÇOUGUE",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 90,
+  "fields": {
+    "name": "HORTIFRUTI",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 91,
+  "fields": {
+    "name": "FRIOS E LATICÍNIOS",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 92,
+  "fields": {
+    "name": "PADARIA",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 93,
+  "fields": {
+    "name": "PRODUTOS DE LIMPEZA",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 1,
+  "fields": {
+    "name": "HABITAÇÃO"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 3,
+  "fields": {
+    "name": "CONTAS RESIDENCIAIS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 4,
+  "fields": {
+    "name": "SUPERMERCADO"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 5,
+  "fields": {
+    "name": "ALIMENTAÇÃO"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 6,
+  "fields": {
+    "name": "LAZER"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 7,
+  "fields": {
+    "name": "ASSINATURAS E SERVIÇOS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 8,
+  "fields": {
+    "name": "COMPRAS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 9,
+  "fields": {
+    "name": "CUIDADOS PESSOAIS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 10,
+  "fields": {
+    "name": "DÍVIDAS E EMPRÉSTIMOS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 11,
+  "fields": {
+    "name": "EDUCAÇÃO"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 12,
+  "fields": {
+    "name": "FAMÍLIA E FILHOS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 13,
+  "fields": {
+    "name": "IMPOSTOS E TAXAS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 14,
+  "fields": {
+    "name": "INVESTIMENTOS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 15,
+  "fields": {
+    "name": "PRESENTES E DOAÇÕES"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 16,
+  "fields": {
+    "name": "SAÚDE"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 17,
+  "fields": {
+    "name": "SEGUROS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 18,
+  "fields": {
+    "name": "DESPESAS DE TRABALHO"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 19,
+  "fields": {
+    "name": "TRANSPORTE"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 20,
+  "fields": {
+    "name": "RENDAS ATIVAS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 21,
+  "fields": {
+    "name": "RENDAS PASSIVAS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 22,
+  "fields": {
+    "name": "VENDAS EVENTUAIS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 23,
+  "fields": {
+    "name": "OUTROS"
+  }
+}
+]
