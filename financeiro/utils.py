@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 import matplotlib.pyplot as plt
 import io
@@ -9,68 +10,124 @@ import openai
 openai.api_key = config('APIKEY')
 
 
+def salvar_arquivo_base64(base64_str, extensao=".jpg"):
+    caminho = f"tmp/{uuid.uuid4()}{extensao}"
+    with open(caminho, "wb") as f:
+        f.write(base64.b64decode(base64_str))
+    return caminho
+
+
+def categorias_financeiras_prompt():
+    return """
+Use apenas as seguintes categorias e subcategorias (com acentuação e capitalização corretas):
+
+➡️ Despesas:
+- Habitação > Aluguel, Condomínio
+- Contas residenciais > Energia, Água, Telefone, Internet
+- Supermercado > mercearia, açougue, hortifruti, frios e laticínios, padaria, bebidas e produtos de limpeza
+- Alimentação > Refeições e lanches, ifood
+- Lazer > Cinema e teatro, Festas e eventos, Hobbies
+- Assinaturas e serviços > Streamings, Aplicativos
+- Compras > Roupas e acessórios, Compras diversas, Eletrônicos
+- Cuidados pessoais > Higiene pessoal, Salão de beleza, Barbearia
+- Dívidas e empréstimos > Financiamentos, Empréstimo
+- Educação > Escola/Faculdade, Material escolar, Cursos extracurriculares
+- Família e filhos > Mesada, Ajuda de custo
+- Impostos e taxas > Taxas bancárias, IPTU, IPVA, Anuidade de cartão
+- Investimentos > Reserva de emergência, Aposentadoria, Objetivos
+- Presentes e doações > Dízimo, Presentes, Doações
+- Saúde > Medicamentos, Plano de saúde, Consultas particulares
+- Seguros > Seguro de vida, Seguro automotivo, Seguro residencial
+- Despesas de trabalho > Custos diversos, Despesas operacionais, Material de escritório
+- Transporte > Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento
+
+➡️ Receitas:
+- Rendas ativas > Salário / Pró-labore, Freelas / Bônus / Comissão, 13º Salário / Hora extra
+- Rendas passivas > Rendimentos de investimentos (CDBs, Tesouro, Fundos, etc.), Dividendos de ações e FIIs, Aluguéis, Royalties
+- Vendas eventuais > Bens usados, Marketplace
+- Outros > Cashback, Prêmios, Presentes
+
+📌 Sempre retorne a subcategoria como o valor da chave \"categoria\".
+Se o usuário mencionar apenas a categoria principal (ex: Transporte ou Rendas passivas), use exatamente esse nome.
+Caso o usuário mencione que deseja um gráfico, adicione \"grafico\": true na resposta JSON.
+"""
+
+
+def transcrever_audio(caminho):
+    with open(caminho, "rb") as f:
+        result = openai.Audio.transcribe("whisper-1", f)
+        return result["text"]
+
+
+def interpretar_imagem_gpt4_vision(caminho_imagem):
+    with open(caminho_imagem, "rb") as img_file:
+        base64_image = base64.b64encode(img_file.read()).decode("utf-8")
+
+    prompt_sistema = (
+            "Você é um assistente financeiro. Ao receber uma imagem contendo comprovante, nota fiscal, print de gastos ou qualquer item financeiro, "
+            "analise o conteúdo e retorne um JSON com as seguintes informações:\n\n"
+            "1. tipo: 'registro'\n"
+            "2. valor: valor numérico em reais\n"
+            "3. categoria: uma das subcategorias financeiras como 'ifood', 'supermercado', 'combustível', etc.\n"
+            "4. descricao: uma breve descrição da transação\n"
+            "5. data: data da transação no formato yyyy-mm-dd\n"
+            "6. tipo_lancamento: 'despesa' ou 'receita'\n\n"
+            "Exemplo:\n"
+            "{\"tipo\": \"registro\", \"valor\": 120.50, \"categoria\": \"ifood\", \"descricao\": \"pedido no ifood\", \"data\": \"2025-04-05\", \"tipo_lancamento\": \"despesa\"}" + categorias_financeiras_prompt()
+    )
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": prompt_sistema},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}"
+                        }
+                    }
+                ]
+            }
+        ],
+        max_tokens=1000
+    )
+
+    return response["choices"][0]["message"]["content"]
+
+
 def interpretar_mensagem(mensagem_usuario):
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
     data_hoje = datetime.now(fuso_brasilia).date().isoformat()
 
-    categorias_financeiras = """
-    Use apenas as seguintes categorias e subcategorias (com acentuação e capitalização corretas):
-
-    - Habitação > Aluguel, Condomínio
-    - Contas residenciais > Energia, Água, Telefone, Internet
-    - Supermercado
-    - Alimentação > Refeições e lanches
-    - Lazer > Cinema e teatro, Festas e eventos, Hobbies
-    - Assinaturas e serviços > Streamings, Aplicativos
-    - Compras > Roupas e acessórios, Compras diversas, Eletrônicos
-    - Cuidados pessoais > Higiene pessoal, Salão de beleza, Barbearia
-    - Dívidas e empréstimos > Financiamentos, Empréstimo
-    - Educação > Escola/Faculdade, Material escolar, Cursos extracurriculares
-    - Família e filhos > Mesada, Ajuda de custo
-    - Impostos e taxas > Taxas bancárias, IPTU, IPVA, Anuidade de cartão
-    - Investimentos > Reserva de emergência, Aposentadoria, Objetivos
-    - Presentes e doações > Dízimo, Presentes, Doações
-    - Saúde > Medicamentos, Plano de saúde, Consultas particulares
-    - Seguros > Seguro de vida, Seguro automotivo, Seguro residencial
-    - Despesas de trabalho > Custos diversos, Despesas operacionais, Material de escritório
-    - Transporte > Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento
-
-    Sempre retorne a subcategoria como o valor da chave "categoria".
-    Se o usuário mencionar uma categoria geral (ex: Transporte, Saúde), use o nome da categoria principal.
-    Caso o usuário mencione que deseja um gráfico, adicione "grafico": true na resposta JSON.
-    """
+    prompt_sistema = (
+            f"Hoje é {data_hoje}. "
+            "Você é um assistente financeiro. Sua função é interpretar mensagens de um usuário sobre registros ou consultas financeiras. "
+            "Sempre responda em JSON com as seguintes possibilidades:\n\n"
+            "1. Quando for um *registro* de gasto ou receita, responda com:\n"
+            "{\"tipo\": \"registro\", \"valor\": 1200, \"categoria\": \"IPVA\", \"descricao\": \"paguei o IPVA\", \"data\": \"2025-04-04\", \"tipo_lancamento\": \"despesa\"}\n\n"
+            "2. Quando for uma *consulta*, responda com:\n"
+            "{\"tipo\": \"consulta\", \"data_inicial\": \"2025-04-01\", \"data_final\": \"2025-04-05\", \"categoria\": \"Plano de saúde\", \"tipo_lancamento\": \"despesa\", \"grafico\": true (caso solicitado)}\n\n"
+            "3. Se a mensagem não for sobre finanças, retorne:\n"
+            "{\"tipo\": \"irrelevante\"}\n\n"
+            "*Regras importantes:*\n"
+            "- Se o usuário usar palavras como *gastos*, *despesas*, *gastei*, associe a \"tipo_lancamento\": \"despesa\"\n"
+            "- Se o usuário usar palavras como *recebi*, *entrada*, *ganhei*, associe a \"tipo_lancamento\": \"receita\"\n"
+            "- Sempre retorne datas no formato yyyy-mm-dd\n"
+            "- Sempre use o nome exato da categoria ou subcategoria, com acentuação e capitalização corretas\n"
+            "- Sempre retorne a subcategoria como valor da chave \"categoria\"\n"
+            "- Use \"tipo_lancamento\" mesmo nas consultas, se for possível inferir pelo contexto\n"
+            f"- A data de hoje deve ser considerada como sendo {data_hoje}\n\n"
+            + categorias_financeiras_prompt()
+    )
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         temperature=0,
         messages=[
-            {
-                "role": "system",
-                "content": (
-                    f"Hoje é {data_hoje}. "
-                    "Você é um assistente financeiro. Sua função é interpretar mensagens de um usuário sobre registros ou consultas financeiras. "
-                    "Sempre responda em JSON com as seguintes possibilidades:\n\n"
-
-                    "1. Quando for um *registro* de gasto ou receita, responda com:\n"
-                    "{\"tipo\": \"registro\", \"valor\": 1200, \"categoria\": \"IPVA\", \"descricao\": \"paguei o IPVA\", \"data\": \"2025-04-04\", \"tipo_lancamento\": \"despesa\"}\n\n"
-
-                    "2. Quando for uma *consulta*, responda com:\n"
-                    "{\"tipo\": \"consulta\", \"data_inicial\": \"2025-04-01\", \"data_final\": \"2025-04-05\", \"categoria\": \"Plano de saúde\", \"tipo_lancamento\": \"despesa\", \"grafico\": true (caso solicitado)}\n\n"
-
-                    "3. Se a mensagem não for sobre finanças, retorne:\n"
-                    "{\"tipo\": \"irrelevante\"}\n\n"
-
-                    "*Regras importantes:*\n"
-                    "- Se o usuário usar palavras como *gastos*, *despesas*, *gastei*, associe a \"tipo_lancamento\": \"despesa\"\n"
-                    "- Se o usuário usar palavras como *recebi*, *entrada*, *ganhei*, associe a \"tipo_lancamento\": \"receita\"\n"
-                    "- Sempre retorne datas no formato yyyy-mm-dd\n"
-                    "- Sempre use o nome exato da categoria ou subcategoria, com acentuação e capitalização corretas\n"
-                    "- Sempre retorne a subcategoria como valor da chave \"categoria\"\n"
-                    "- Use \"tipo_lancamento\" mesmo nas consultas, se for possível inferir pelo contexto\n"
-                    f"- A data de hoje deve ser considerada como sendo {data_hoje}\n\n"
-                    f"{categorias_financeiras}"
-                )
-            },
+            {"role": "system", "content": prompt_sistema},
             {"role": "user", "content": mensagem_usuario}
         ]
     )
@@ -86,7 +143,7 @@ def formatar_resposta_registro(transacao):
     data = transacao.created_at.strftime("%d/%m/%Y")
 
     return (
-        "✅ *Transação registrada!*\n\n"        
+        "✅ *Transação registrada!*\n\n"
         f"_Tipo:_ *{tipo.upper()}*\n"
         f"_Valor:_ *{valor}*\n"
         f"_Categoria:_ *{categoria.upper()}*\n"
@@ -107,7 +164,7 @@ def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=N
     header = (
         "📊 *Resumo de transações*\n"
         f"_Período:_ *{inicio}* até *{fim}*\n"
-        f"_Categoria:_ *{categoria if categoria else 'TODAS'}*\n"        
+        f"_Categoria:_ *{categoria if categoria else 'TODAS'}*\n"
         f"_Total:_ *{total_str.upper()}*\n\n"
         "*Transações:* \n"
     )

@@ -1,4 +1,5 @@
-from .utils import interpretar_mensagem, formatar_resposta_registro, formatar_resposta_consulta, gerar_grafico_base64
+from .utils import interpretar_mensagem, formatar_resposta_registro, formatar_resposta_consulta, gerar_grafico_base64, \
+    salvar_arquivo_base64, transcrever_audio, interpretar_imagem_gpt4_vision
 import json
 from datetime import datetime
 from django.utils.timezone import make_aware, now
@@ -20,12 +21,26 @@ class InterpretarTransacaoView(APIView):
         try:
             data = request.POST
 
+            message_type = data.get("message_type", "text").strip()
+            base64_str = data.get("message_body", "")
+            extensao = data.get("message_body_extension", ".txt")
             phone_number = data.get("contact_phone_number", "").strip()
             nome_contato = data.get("contact_name", "").strip()
-            description = data.get("message_body", "").strip()
 
-            if not phone_number or not description:
-                return Response({"error": "Campos 'phone_number' e 'description' são obrigatórios."}, status=400)
+            if not phone_number:
+                return Response({"error": "Campo 'phone_number' obrigatório."}, status=400)
+
+            if message_type == "audio" and base64_str:
+                caminho = salvar_arquivo_base64(base64_str, extensao)
+                description = transcrever_audio(caminho)
+            elif message_type == "image" and base64_str:
+                caminho = salvar_arquivo_base64(base64_str, extensao)
+                description = interpretar_imagem_gpt4_vision(caminho)
+            else:
+                description = base64_str.strip()
+
+            if not description:
+                return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=400)
 
             interpretado_raw = interpretar_mensagem(description)
             interpretado = json.loads(interpretado_raw)

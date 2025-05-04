@@ -11,7 +11,7 @@
   "model": "financeiro.category",
   "pk": 28,
   "fields": {
-    "name": "Condom√≠nio",
+    "name": "CondomÌnio",
     "main_category": 1
   }
 },
@@ -27,7 +27,7 @@
   "model": "financeiro.category",
   "pk": 30,
   "fields": {
-    "name": "√Ågua",
+    "name": "¡gua",
     "main_category": 3
   }
 },
@@ -51,7 +51,7 @@
   "model": "financeiro.category",
   "pk": 33,
   "fields": {
-    "name": "Refei√ß√µes e lanches",
+    "name": "RefeiÁıes e lanches",
     "main_category": 5
   }
 },
@@ -99,7 +99,7 @@
   "model": "financeiro.category",
   "pk": 39,
   "fields": {
-    "name": "Roupas e acess√≥rios",
+    "name": "Roupas e acessÛrios",
     "main_category": 8
   }
 },
@@ -115,7 +115,7 @@
   "model": "financeiro.category",
   "pk": 41,
   "fields": {
-    "name": "Eletr√¥nicos",
+    "name": "EletrÙnicos",
     "main_category": 8
   }
 },
@@ -131,7 +131,7 @@
   "model": "financeiro.category",
   "pk": 43,
   "fields": {
-    "name": "Sal√£o de beleza",
+    "name": "Sal„o de beleza",
     "main_category": 9
   }
 },
@@ -155,7 +155,7 @@
   "model": "financeiro.category",
   "pk": 46,
   "fields": {
-    "name": "Empr√©stimo",
+    "name": "EmprÈstimo",
     "main_category": 10
   }
 },
@@ -203,7 +203,7 @@
   "model": "financeiro.category",
   "pk": 52,
   "fields": {
-    "name": "Taxas banc√°rias",
+    "name": "Taxas banc·rias",
     "main_category": 13
   }
 },
@@ -227,7 +227,7 @@
   "model": "financeiro.category",
   "pk": 55,
   "fields": {
-    "name": "Anuidade de cart√£o",
+    "name": "Anuidade de cart„o",
     "main_category": 13
   }
 },
@@ -235,7 +235,7 @@
   "model": "financeiro.category",
   "pk": 56,
   "fields": {
-    "name": "Reserva de emerg√™ncia",
+    "name": "Reserva de emergÍncia",
     "main_category": 14
   }
 },
@@ -259,7 +259,7 @@
   "model": "financeiro.category",
   "pk": 59,
   "fields": {
-    "name": "D√≠zimo",
+    "name": "DÌzimo",
     "main_category": 15
   }
 },
@@ -275,7 +275,7 @@
   "model": "financeiro.category",
   "pk": 61,
   "fields": {
-    "name": "Doa√ß√µes",
+    "name": "DoaÁıes",
     "main_category": 15
   }
 },
@@ -291,7 +291,7 @@
   "model": "financeiro.category",
   "pk": 63,
   "fields": {
-    "name": "Plano de sa√∫de",
+    "name": "Plano de sa˙de",
     "main_category": 16
   }
 },
@@ -347,7 +347,7 @@
   "model": "financeiro.category",
   "pk": 70,
   "fields": {
-    "name": "Material de escrit√≥rio",
+    "name": "Material de escritÛrio",
     "main_category": 18
   }
 },
@@ -355,7 +355,7 @@
   "model": "financeiro.category",
   "pk": 71,
   "fields": {
-    "name": "Combust√≠vel",
+    "name": "CombustÌvel",
     "main_category": 19
   }
 },
@@ -363,7 +363,7 @@
   "model": "financeiro.category",
   "pk": 72,
   "fields": {
-    "name": "Manuten√ß√£o",
+    "name": "ManutenÁ„o",
     "main_category": 19
   }
 },
@@ -371,7 +371,7 @@
   "model": "financeiro.category",
   "pk": 73,
   "fields": {
-    "name": "T√°xi/Transporte por aplicativo",
+    "name": "T·xi/Transporte por aplicativo",
     "main_category": 19
   }
 },
@@ -379,7 +379,7 @@
   "model": "financeiro.category",
   "pk": 74,
   "fields": {
-    "name": "Transporte p√∫blico",
+    "name": "Transporte p˙blico",
     "main_category": 19
   }
 },
@@ -392,10 +392,154 @@
   }
 },
 {
+  "model": "financeiro.category",
+  "pk": 76,
+  "fields": {
+    "name": "SAL¡RIO/PR”-LABORE",
+    "main_category": 20
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 77,
+  "fields": {
+    "name": "FREELAS/ B‘NUS / COMISS√O",
+    "main_category": 20
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 78,
+  "fields": {
+    "name": "13∫ SAL¡RIO/ HORA EXTRA",
+    "main_category": 20
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 79,
+  "fields": {
+    "name": "RENDIMENTOS DE INVESTIMENTOS (CDBS, TESOURO, FUNDO",
+    "main_category": 21
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 80,
+  "fields": {
+    "name": "DIVIDENDOS DE A«’ES E FIIS",
+    "main_category": 21
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 81,
+  "fields": {
+    "name": "ALUGU…IS",
+    "main_category": 21
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 82,
+  "fields": {
+    "name": "ROYALTIES",
+    "main_category": 21
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 83,
+  "fields": {
+    "name": "BENS USADOS",
+    "main_category": 22
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 84,
+  "fields": {
+    "name": "MARKETPLACE",
+    "main_category": 22
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 85,
+  "fields": {
+    "name": "CASHBACK",
+    "main_category": 23
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 86,
+  "fields": {
+    "name": "PR MIOS",
+    "main_category": 23
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 87,
+  "fields": {
+    "name": "PRESENTES",
+    "main_category": 23
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 88,
+  "fields": {
+    "name": "MERCEARIA",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 89,
+  "fields": {
+    "name": "A«OUGUE",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 90,
+  "fields": {
+    "name": "HORTIFRUTI",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 91,
+  "fields": {
+    "name": "FRIOS E LATICÕNIOS",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 92,
+  "fields": {
+    "name": "PADARIA",
+    "main_category": 4
+  }
+},
+{
+  "model": "financeiro.category",
+  "pk": 93,
+  "fields": {
+    "name": "PRODUTOS DE LIMPEZA",
+    "main_category": 4
+  }
+},
+{
   "model": "financeiro.maincategory",
   "pk": 1,
   "fields": {
-    "name": "HABITA√á√ÉO"
+    "name": "HABITA«√O"
   }
 },
 {
@@ -416,7 +560,7 @@
   "model": "financeiro.maincategory",
   "pk": 5,
   "fields": {
-    "name": "ALIMENTA√á√ÉO"
+    "name": "ALIMENTA«√O"
   }
 },
 {
@@ -430,7 +574,7 @@
   "model": "financeiro.maincategory",
   "pk": 7,
   "fields": {
-    "name": "ASSINATURAS E SERVI√áOS"
+    "name": "ASSINATURAS E SERVI«OS"
   }
 },
 {
@@ -451,21 +595,21 @@
   "model": "financeiro.maincategory",
   "pk": 10,
   "fields": {
-    "name": "D√çVIDAS E EMPR√âSTIMOS"
+    "name": "DÕVIDAS E EMPR…STIMOS"
   }
 },
 {
   "model": "financeiro.maincategory",
   "pk": 11,
   "fields": {
-    "name": "EDUCA√á√ÉO"
+    "name": "EDUCA«√O"
   }
 },
 {
   "model": "financeiro.maincategory",
   "pk": 12,
   "fields": {
-    "name": "FAM√çLIA E FILHOS"
+    "name": "FAMÕLIA E FILHOS"
   }
 },
 {
@@ -486,14 +630,14 @@
   "model": "financeiro.maincategory",
   "pk": 15,
   "fields": {
-    "name": "PRESENTES E DOA√á√ïES"
+    "name": "PRESENTES E DOA«’ES"
   }
 },
 {
   "model": "financeiro.maincategory",
   "pk": 16,
   "fields": {
-    "name": "SA√öDE"
+    "name": "SA⁄DE"
   }
 },
 {
@@ -515,6 +659,34 @@
   "pk": 19,
   "fields": {
     "name": "TRANSPORTE"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 20,
+  "fields": {
+    "name": "RENDAS ATIVAS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 21,
+  "fields": {
+    "name": "RENDAS PASSIVAS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 22,
+  "fields": {
+    "name": "VENDAS EVENTUAIS"
+  }
+},
+{
+  "model": "financeiro.maincategory",
+  "pk": 23,
+  "fields": {
+    "name": "OUTROS"
   }
 }
 ]
