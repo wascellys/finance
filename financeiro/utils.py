@@ -1,11 +1,13 @@
 import uuid
 from datetime import datetime
-import matplotlib.pyplot as plt
+import plotly.io as pio
 import io
 import base64
 import pytz
 from decouple import config
 import openai
+import plotly.graph_objects as go
+
 
 openai.api_key = config('APIKEY')
 
@@ -191,19 +193,31 @@ def gerar_grafico_base64(transacoes):
     labels = list(categorias.keys())
     valores = list(categorias.values())
 
-    plt.style.use('ggplot')
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(labels, valores, color='#4B0082')
-    ax.set_title('Gastos por Categoria')
-    ax.set_ylabel('Valor (R$)')
-    ax.set_xlabel('Categoria')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                x=labels,
+                y=valores,
+                marker=dict(color='indigo'),
+                text=[f"R$ {v:.2f}".replace('.', ',') for v in valores],
+                textposition='auto'
+            )
+        ]
+    )
 
+    fig.update_layout(
+        title='Gastos por Categoria',
+        xaxis_title='Categoria',
+        yaxis_title='Valor (R$)',
+        template='plotly_dark',
+        height=500,
+        margin=dict(l=30, r=30, t=50, b=50),
+    )
+
+    # Salvar como imagem base64
     buffer = io.BytesIO()
-    plt.savefig(buffer, format='png')
+    pio.write_image(fig, buffer, format='png')  # Requer instalação do kaleido
     buffer.seek(0)
     imagem_base64 = base64.b64encode(buffer.read()).decode('utf-8')
-    plt.close()
 
     return imagem_base64
