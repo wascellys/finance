@@ -19,6 +19,8 @@ def normalizar(texto):
 class InterpretarTransacaoView(APIView):
     def post(self, request):
         try:
+
+
             data = request.POST
 
             message_type = data.get("message_type", "text").strip().lower()
@@ -26,6 +28,8 @@ class InterpretarTransacaoView(APIView):
             extensao = data.get("message_body_extension", ".txt").strip()
             phone_number = data.get("contact_phone_number", "").strip()
             nome_contato = data.get("contact_name", "").strip()
+
+            print(base64_str)
 
             if not phone_number:
                 return Response({"error": "Campo 'phone_number' obrigatório."}, status=400)
