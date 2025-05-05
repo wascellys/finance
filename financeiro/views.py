@@ -19,32 +19,29 @@ def normalizar(texto):
 class InterpretarTransacaoView(APIView):
     def post(self, request):
         try:
-
-            print(request.POST.get("message_body"))
-            print(request.FILES.get("message_body"))
             data = request.POST
 
-            message_type = data.get("message_type", "text").strip()
+            message_type = data.get("message_type", "text").strip().lower()
             base64_str = request.FILES.get('message_body') if request.FILES.get('message_body') else data.get("message_body", "")
-            extensao = data.get("message_body_extension", ".txt")
+            extensao = data.get("message_body_extension", ".txt").strip()
             phone_number = data.get("contact_phone_number", "").strip()
             nome_contato = data.get("contact_name", "").strip()
 
             if not phone_number:
                 return Response({"error": "Campo 'phone_number' obrigatório."}, status=400)
 
+            # Processamento baseado no tipo de mensagem
             if message_type == "audio" and base64_str:
                 caminho = salvar_arquivo_temporario(base64_str, extensao)
                 description = transcrever_audio(caminho)
             elif message_type == "image" and base64_str:
-                caminho = salvar_arquivo_temporario(base64_str, extensao)
-                description = interpretar_imagem_gpt4_vision(caminho)
+                description = interpretar_imagem_gpt4_vision(base64_str)
             else:
+                # Para texto ou fallback
                 description = base64_str.strip()
 
             if not description:
                 return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=400)
-
             interpretado_raw = interpretar_mensagem(description)
             interpretado = json.loads(interpretado_raw)
 

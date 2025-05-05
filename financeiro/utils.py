@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime
 import plotly.io as pio
@@ -8,27 +9,21 @@ from decouple import config
 import openai
 import plotly.graph_objects as go
 
-
 openai.api_key = config('APIKEY')
 
 
-def salvar_arquivo_temporario(input_data, extensao=".jpg"):
+def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
+    os.makedirs("tmp", exist_ok=True)  # Garante que a pasta exista
     caminho = f"tmp/{uuid.uuid4()}{extensao}"
 
-    # Caso seja um InMemoryUploadedFile (de request.FILES)
-    if hasattr(input_data, "chunks"):
-        with open(caminho, "wb") as f:
-            for chunk in input_data.chunks():
-                f.write(chunk)
-        return caminho
+    # Garante que não venha prefixo "data:image/jpeg;base64," ou similar
+    if "," in base64_str:
+        base64_str = base64_str.split(",", 1)[1]
 
-    # Caso seja uma string base64
-    elif isinstance(input_data, str):
-        with open(caminho, "wb") as f:
-            f.write(base64.b64decode(input_data))
-        return caminho
+    with open(caminho, "wb") as f:
+        f.write(base64.b64decode(base64_str))
 
-    raise ValueError("Formato de arquivo não suportado para salvar temporariamente.")
+    return caminho
 
 
 def categorias_financeiras_prompt():
@@ -73,9 +68,8 @@ def transcrever_audio(caminho):
         return result["text"]
 
 
-def interpretar_imagem_gpt4_vision(caminho_imagem):
-    with open(caminho_imagem, "rb") as img_file:
-        base64_image = base64.b64encode(img_file.read()).decode("utf-8")
+def interpretar_imagem_gpt4_vision(image):
+
 
     prompt_sistema = (
             "Você é um assistente financeiro. Ao receber uma imagem contendo comprovante, nota fiscal, print de gastos ou qualquer item financeiro, "
@@ -100,7 +94,7 @@ def interpretar_imagem_gpt4_vision(caminho_imagem):
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": f"data:image/jpeg;base64,{base64_image}"
+                            "url": f"data:image/jpeg;base64,{image}"
                         }
                     }
                 ]
