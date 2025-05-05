@@ -1,5 +1,5 @@
 from .utils import interpretar_mensagem, formatar_resposta_registro, formatar_resposta_consulta, gerar_grafico_base64, \
-    salvar_arquivo_base64, transcrever_audio, interpretar_imagem_gpt4_vision
+    salvar_arquivo_temporario, transcrever_audio, interpretar_imagem_gpt4_vision
 import json
 from datetime import datetime
 from django.utils.timezone import make_aware, now
@@ -19,6 +19,8 @@ def normalizar(texto):
 class InterpretarTransacaoView(APIView):
     def post(self, request):
         try:
+
+            print(request)
             data = request.POST
 
             message_type = data.get("message_type", "text").strip()
@@ -31,10 +33,10 @@ class InterpretarTransacaoView(APIView):
                 return Response({"error": "Campo 'phone_number' obrigatório."}, status=400)
 
             if message_type == "audio" and base64_str:
-                caminho = salvar_arquivo_base64(base64_str, extensao)
+                caminho = salvar_arquivo_temporario(base64_str, extensao)
                 description = transcrever_audio(caminho)
             elif message_type == "image" and base64_str:
-                caminho = salvar_arquivo_base64(base64_str, extensao)
+                caminho = salvar_arquivo_temporario(base64_str, extensao)
                 description = interpretar_imagem_gpt4_vision(caminho)
             else:
                 description = base64_str.strip()
