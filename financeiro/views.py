@@ -18,19 +18,17 @@ def normalizar(texto):
 
 class InterpretarTransacaoView(APIView):
     def post(self, request):
+
+        data = request.POST
+
+        message_type = data.get("message_type", "text").strip().lower()
+        base64_str = data.get('message_body', "")
+        extensao = data.get("message_body_extension", ".txt").strip()
+        phone_number = data.get("contact_phone_number", "").strip()
+        nome_contato = data.get("contact_name", "").strip()
+
+        print(base64_str)
         try:
-
-
-            data = request.POST
-
-            message_type = data.get("message_type", "text").strip().lower()
-            base64_str = request.FILES.get('message_body') if request.FILES.get('message_body') else data.get("message_body", "")
-            extensao = data.get("message_body_extension", ".txt").strip()
-            phone_number = data.get("contact_phone_number", "").strip()
-            nome_contato = data.get("contact_name", "").strip()
-
-            print(base64_str)
-
             if not phone_number:
                 return Response({"error": "Campo 'phone_number' obrigatório."}, status=400)
 
@@ -80,7 +78,7 @@ class InterpretarTransacaoView(APIView):
                 categoria = None
 
                 for cat in Category.objects.all():
-                    if normalizar(cat.name) == categoria_nome_normalizada:
+                    if normalizar(cat.name).upper() == categoria_nome_normalizada.upper():
                         categoria = cat
                         break
 

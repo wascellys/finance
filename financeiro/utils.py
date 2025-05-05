@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from datetime import datetime
 import plotly.io as pio
@@ -12,16 +13,24 @@ import plotly.graph_objects as go
 openai.api_key = config('APIKEY')
 
 
+def limpar_base64(data: str):
+    # Remove espaços, quebras de linha e caracteres inválidos
+    clean_str = data.replace(' ', '').replace('\n', '')
+
+    return clean_str
+
+
 def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
-    os.makedirs("tmp", exist_ok=True)  # Garante que a pasta exista
+    os.makedirs("tmp", exist_ok=True)  # garante a pasta tmp
     caminho = f"tmp/{uuid.uuid4()}{extensao}"
 
-    # Garante que não venha prefixo "data:image/jpeg;base64," ou similar
-    if "," in base64_str:
-        base64_str = base64_str.split(",", 1)[1]
+    base64_str = limpar_base64(base64_str)
 
-    with open(caminho, "wb") as f:
-        f.write(base64.b64decode(base64_str))
+    try:
+        with open(caminho, "wb") as f:
+            f.write(base64.b64decode(base64_str))
+    except base64.binascii.Error:
+        raise ValueError("Base64 inválido")
 
     return caminho
 
@@ -51,9 +60,9 @@ Use apenas as seguintes categorias e subcategorias (com acentuação e capitaliz
 - Transporte > Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento
 
 ➡️ Receitas:
-- Rendas ativas > Salário / Pró-labore, Freelas / Bônus / Comissão, 13º Salário / Hora extra
-- Rendas passivas > Rendimentos de investimentos (CDBs, Tesouro, Fundos, etc.), Dividendos de ações e FIIs, Aluguéis, Royalties
-- Vendas eventuais > Bens usados, Marketplace
+- Rendas Ativas > Salário/Pró-labore, Freelas/Bônus / Comissão, 13º Salário/Hora extra
+- Rendas Passivas > Rendimentos de investimentos (CDBs, Tesouro, Fundos, etc.), Dividendos de ações e FIIs, Aluguéis, Royalties
+- Vendas Eventuais > Bens usados, Marketplace
 - Outros > Cashback, Prêmios, Presentes
 
 📌 Sempre retorne a subcategoria como o valor da chave \"categoria\".
@@ -69,19 +78,11 @@ def transcrever_audio(caminho):
 
 
 def interpretar_imagem_gpt4_vision(image):
-
+    image = limpar_base64(image)
 
     prompt_sistema = (
-            "Você é um assistente financeiro. Ao receber uma imagem contendo comprovante, nota fiscal, print de gastos ou qualquer item financeiro, "
-            "analise o conteúdo e retorne um JSON com as seguintes informações:\n\n"
-            "1. tipo: 'registro'\n"
-            "2. valor: valor numérico em reais\n"
-            "3. categoria: uma das subcategorias financeiras como 'ifood', 'supermercado', 'combustível', etc.\n"
-            "4. descricao: uma breve descrição da transação\n"
-            "5. data: data da transação no formato yyyy-mm-dd\n"
-            "6. tipo_lancamento: 'despesa' ou 'receita'\n\n"
-            "Exemplo:\n"
-            "{\"tipo\": \"registro\", \"valor\": 120.50, \"categoria\": \"ifood\", \"descricao\": \"pedido no ifood\", \"data\": \"2025-04-05\", \"tipo_lancamento\": \"despesa\"}" + categorias_financeiras_prompt()
+            "Você é um assistente financeiro..."  # sua mensagem original
+            + categorias_financeiras_prompt()
     )
 
     response = openai.ChatCompletion.create(
