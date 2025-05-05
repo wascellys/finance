@@ -20,7 +20,8 @@ class InterpretarTransacaoView(APIView):
     def post(self, request):
         try:
 
-            print(request)
+            print(request.POST.get("message_body"))
+            print(request.FILES.get("message_body"))
             data = request.POST
 
             message_type = data.get("message_type", "text").strip()
