@@ -12,10 +12,11 @@ import plotly.graph_objects as go
 openai.api_key = config('APIKEY')
 
 
-def salvar_arquivo_base64(base64_str, extensao=".jpg"):
+def salvar_arquivo_base64(file_obj, extensao=".jpg"):
     caminho = f"tmp/{uuid.uuid4()}{extensao}"
     with open(caminho, "wb") as f:
-        f.write(base64.b64decode(base64_str))
+        for chunk in file_obj.chunks():
+            f.write(chunk)
     return caminho
 
 

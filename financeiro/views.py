@@ -22,7 +22,7 @@ class InterpretarTransacaoView(APIView):
             data = request.POST
 
             message_type = data.get("message_type", "text").strip()
-            base64_str = data.get("message_body", "")
+            base64_str = request.FILES.get('message_body') if request.FILES.get('message_body') else data.get("message_body", "")
             extensao = data.get("message_body_extension", ".txt")
             phone_number = data.get("contact_phone_number", "").strip()
             nome_contato = data.get("contact_name", "").strip()
