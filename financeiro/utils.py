@@ -15,7 +15,7 @@ openai.api_key = config('APIKEY')
 
 def limpar_base64(data: str):
     # Remove espaços, quebras de linha e caracteres inválidos
-    clean_str = data.replace(' ', '').replace('\n', '')
+    clean_str = data.replace(' ', '+').replace('\n', '')
 
     return clean_str
 
