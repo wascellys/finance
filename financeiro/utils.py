@@ -40,35 +40,37 @@ def categorias_financeiras_prompt():
 Use apenas as seguintes categorias e subcategorias (com acentuação e capitalização corretas):
 
 ➡️ Despesas:
-- Habitação > Aluguel, Condomínio
-- Contas residenciais > Energia, Água, Telefone, Internet
-- Supermercado > mercearia, açougue, hortifruti, frios e laticínios, padaria, bebidas e produtos de limpeza
-- Alimentação > Refeições e lanches, ifood
-- Lazer > Cinema e teatro, Festas e eventos, Hobbies
-- Assinaturas e serviços > Streamings, Aplicativos
-- Compras > Roupas e acessórios, Compras diversas, Eletrônicos
-- Cuidados pessoais > Higiene pessoal, Salão de beleza, Barbearia
-- Dívidas e empréstimos > Financiamentos, Empréstimo
-- Educação > Escola/Faculdade, Material escolar, Cursos extracurriculares
-- Família e filhos > Mesada, Ajuda de custo
-- Impostos e taxas > Taxas bancárias, IPTU, IPVA, Anuidade de cartão
-- Investimentos > Reserva de emergência, Aposentadoria, Objetivos
-- Presentes e doações > Dízimo, Presentes, Doações
-- Saúde > Medicamentos, Plano de saúde, Consultas particulares
-- Seguros > Seguro de vida, Seguro automotivo, Seguro residencial
-- Despesas de trabalho > Custos diversos, Despesas operacionais, Material de escritório
-- Transporte > Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento
+- Habitação > Aluguel, Condomínio, Manutenção residencial, Reforma, Móveis e decoração
+- Contas residenciais > Energia, Água, Telefone, Internet, Gás, TV por assinatura
+- Supermercado > Mercearia, Açougue, Hortifruti, Frios e laticínios, Padaria, Bebidas, Produtos de limpeza, Produtos de higiene, Alimentos industrializados, Congelados, Petiscos e snacks, Produtos infantis, Utensílios domésticos, Produtos para pets, Produtos de papelaria
+- Alimentação > Refeições e lanches, Ifood, Restaurante, Cafeteria
+- Lazer > Cinema e teatro, Festas e eventos, Hobbies, Viagens, Passeios, Jogos
+- Assinaturas e serviços > Streamings, Aplicativos, Clube de vantagens, Jornais e revistas
+- Compras > Roupas e acessórios, Compras diversas, Eletrônicos, Acessórios para casa, Acessórios para carro
+- Cuidados pessoais > Higiene pessoal, Salão de beleza, Barbearia, Estética, Academia
+- Dívidas e empréstimos > Financiamentos, Empréstimo, Parcelamentos, Cartão de crédito
+- Educação > Escola/Faculdade, Material escolar, Cursos extracurriculares, Cursos online, Livros
+- Família e filhos > Mesada, Ajuda de custo, Creche, Roupas infantis, Atividades infantis
+- Impostos e taxas > Taxas bancárias, IPTU, IPVA, Anuidade de cartão, Multas
+- Investimentos > Reserva de emergência, Aposentadoria, Objetivos, Criptomoedas, Ações
+- Presentes e doações > Dízimo, Presentes, Doações, Caridade
+- Saúde > Medicamentos, Plano de saúde, Consultas particulares, Exames, Terapias
+- Seguros > Seguro de vida, Seguro automotivo, Seguro residencial, Seguro saúde
+- Despesas de trabalho > Custos diversos, Despesas operacionais, Material de escritório, Ferramentas, Transporte a trabalho
+- Transporte > Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento, Pedágio
+- Pets > Ração, Pet shop, Veterinário, Acessórios para pets, Banho e tosa
 
 ➡️ Receitas:
-- Rendas Ativas > Salário/Pró-labore, Freelas/Bônus / Comissão, 13º Salário/Hora extra
-- Rendas Passivas > Rendimentos de investimentos (CDBs, Tesouro, Fundos, etc.), Dividendos de ações e FIIs, Aluguéis, Royalties
-- Vendas Eventuais > Bens usados, Marketplace
-- Outros > Cashback, Prêmios, Presentes
+- Rendas Ativas > Salário/Pró-labore, Freelas/Bônus / Comissão, 13º Salário/Hora extra, Participação nos lucros
+- Rendas Passivas > Rendimentos de investimentos (CDBs, Tesouro, Fundos, etc.), Dividendos de ações e FIIs, Aluguéis, Royalties, Juros recebidos
+- Vendas Eventuais > Bens usados, Marketplace, Venda de milhas, Venda de objetos pessoais
+- Outros > Cashback, Prêmios, Presentes, Herança, Restituição de imposto
 
-📌 Sempre retorne a subcategoria como o valor da chave \"categoria\".
+📌 Sempre retorne a subcategoria como o valor da chave "categoria".
 Se o usuário mencionar apenas a categoria principal (ex: Transporte ou Rendas passivas), use exatamente esse nome.
-Caso o usuário mencione que deseja um gráfico, adicione \"grafico\": true na resposta JSON.
+Caso o usuário mencione que deseja um gráfico, adicione "grafico": true na resposta JSON.
 """
+
 
 
 def transcrever_audio(caminho):

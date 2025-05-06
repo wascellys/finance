@@ -82,7 +82,7 @@ class InterpretarTransacaoView(APIView):
                 categoria = None
 
                 for cat in Category.objects.all():
-                    if normalizar(cat.name).upper() == categoria_nome_normalizada.upper():
+                    if normalizar(cat.name) == categoria_nome_normalizada:
                         categoria = cat
                         break
 
