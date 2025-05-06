@@ -87,6 +87,7 @@ class InterpretarTransacaoView(APIView):
                         break
 
                 if not categoria:
+                    print("CATEGORIA não encontrada:", interpretado["categoria"])
                     categoria = Category.objects.create(name=interpretado["categoria"])
 
                 tipo_lancamento = interpretado.get("tipo_lancamento", "despesa")
