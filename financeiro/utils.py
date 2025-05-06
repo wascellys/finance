@@ -110,6 +110,7 @@ def interpretar_imagem_gpt4_vision(image):
 def interpretar_mensagem(mensagem_usuario):
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
     data_hoje = datetime.now(fuso_brasilia).date().isoformat()
+    print(data_hoje)
 
     prompt_sistema = (
             f"Hoje é {data_hoje}. "

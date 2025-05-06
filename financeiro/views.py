@@ -28,6 +28,10 @@ class InterpretarTransacaoView(APIView):
         nome_contato = data.get("contact_name", "").strip()
 
         print(base64_str)
+
+        if len(base64_str) < 5:
+            return Response({"error": "Nenhuma mensagem válida foi recebida. Quantidade de caracteres insuficiente."},
+                            status=400)
         try:
             if not phone_number:
                 return Response({"error": "Campo 'phone_number' obrigatório."}, status=400)
