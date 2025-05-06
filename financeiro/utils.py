@@ -150,7 +150,7 @@ def formatar_resposta_registro(transacao):
     valor = f"R$ {transacao.amount:.2f}".replace('.', ',')
     categoria = transacao.category.name
     descricao = transacao.description
-    data = transacao.created_at.strftime("%d/%m/%Y")
+    data = transacao.date.strftime("%d/%m/%Y")
 
     return (
         "✅ *Transação registrada!*\n\n"
