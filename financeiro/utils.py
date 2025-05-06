@@ -35,6 +35,7 @@ def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
     return caminho
 
 
+
 def categorias_financeiras_prompt():
     return """
 Use apenas as seguintes categorias e subcategorias (com acentuação e capitalização corretas):
