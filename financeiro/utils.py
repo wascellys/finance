@@ -120,7 +120,7 @@ def interpretar_mensagem(mensagem_usuario):
             "3. Se a mensagem não for sobre finanças, retorne:\n"
             "{\"tipo\": \"irrelevante\"}\n\n"
             "*Regras importantes:*\n"
-            "- Se o usuário usar palavras como *gastos*, *despesas*, *gastei*, associe a \"tipo_lancamento\": \"despesa\"\n"
+            "- Se o usuário usar palavras como *gastos*, *despesas*, *gastei*, *comprei*, *paguei*, *compra* ou qualquer outra palavra referente  associe a \"tipo_lancamento\": \"despesa\"\n"
             "- Se o usuário usar palavras como *recebi*, *entrada*, *ganhei*, associe a \"tipo_lancamento\": \"receita\"\n"
             "- Sempre retorne datas no formato yyyy-mm-dd\n"
             "- Sempre use o nome exato da categoria ou subcategoria, com acentuação e capitalização corretas\n"
