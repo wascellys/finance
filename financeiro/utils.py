@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import uuid
@@ -66,7 +67,9 @@ Receitas:
 - Bens usados, Marketplace, Venda de milhas, Venda de objetos pessoais
 - Cashback, Prêmios, Presentes, Herança, Restituição de imposto
 
-📌 Apenas subcategorias são válidas. Se o usuário mencionar apenas a categoria principal, retorne "irrelevante". """
+📌 Apenas subcategorias são válidas. Se o usuário mencionar apenas a categoria principal, retorne "irrelevante". 
+   Caso o usuário faça algum agradeicmento, retorne "agradecimento".
+"""
 
 
 def transcrever_audio(caminho):
@@ -105,9 +108,20 @@ def interpretar_imagem_gpt4_vision(image):
     return response["choices"][0]["message"]["content"]
 
 
+agradecimentos = ["obrigado", "obrigada", "valeu", "agradeço", "muito obrigado", "grato", "grata"]
+
+
 def interpretar_mensagem(mensagem_usuario):
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
     data_hoje = datetime.now(fuso_brasilia).date().isoformat()
+
+    if any(palavra in mensagem_usuario.lower() for palavra in agradecimentos):
+        data = {
+            "tipo": "agradecimento",
+            "mensagem": "De nada! Estou sempre aqui para ajudar. 😊"
+        }
+
+        return json.dumps(data)
 
     prompt_sistema = (
             f"Hoje é {data_hoje}. "
@@ -120,7 +134,7 @@ def interpretar_mensagem(mensagem_usuario):
             "3. Se a mensagem não for sobre finanças, retorne:\n"
             "{\"tipo\": \"irrelevante\"}\n\n"
             "*Regras importantes:*\n"
-            "- Se o usuário usar palavras como *gastos*, *despesas*, *gastei*, *comprei*, *paguei*, *compra* ou qualquer outra palavra referente  associe a \"tipo_lancamento\": \"despesa\"\n"
+            "- Se o usuário usar palavras como *gastos*, *despesas*, *gastei*, *comprei*, *paguei*, *compra* ou qualquer outra palavra referente associe a \"tipo_lancamento\": \"despesa\"\n"
             "- Se o usuário usar palavras como *recebi*, *entrada*, *ganhei*, associe a \"tipo_lancamento\": \"receita\"\n"
             "- Sempre retorne datas no formato yyyy-mm-dd\n"
             "- Sempre use o nome exato da categoria ou subcategoria, com acentuação e capitalização corretas\n"

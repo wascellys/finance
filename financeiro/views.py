@@ -11,6 +11,10 @@ from decouple import config
 
 from .models import User, Category, MainCategory, Transaction
 
+HEADERS = {
+    'Content-Type': 'application/x-www-form-urlencoded'
+}
+
 
 def normalizar(texto):
     return unicodedata.normalize('NFKD', texto).encode('ASCII', 'ignore').decode('ASCII').lower()
@@ -61,16 +65,34 @@ class InterpretarTransacaoView(APIView):
                     "contact_name": nome_contato or phone_number,
                     "chat_type": "user",
                     "message_type": "text",
-                    "message_body": "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente.",
+                    "message_body": (
+                        "Não conseguimos processar sua mensagem 🥺. \n"
+                        "Para registrar um gasto, utilize palavras como *gastei*, *paguei*, *compra*, seguido do valor e categoria. \n"
+                        "Para consultar despesas ou receitas, você pode usar expressões como *quanto gastei em alimentação* ou *consultar minhas receitas*. \n\n"
+                        "Exemplos: 'Gastei 50 reais em supermercado' ou 'Consultar despesas de transporte em abril'. \n\n"
+                        "Tente novamente! 😊"
+                    ),
                 }
 
-                headers = {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
 
-                requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=headers)
+                requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
 
                 return Response({"error": "Mensagem irrelevante."}, status=400)
+
+            if interpretado["tipo"] == "agradecimento":
+                resposta = {
+                    "apiKey": config("APIKEY_WG"),
+                    "phone_number": config("BOT_NUMBER"),
+                    "contact_phone_number": phone_number,
+                    "contact_name": nome_contato or phone_number,
+                    "chat_type": "user",
+                    "message_type": "text",
+                    "message_body": interpretado["mensagem"],
+                }
+
+                requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
+
+                return Response({"message": interpretado["mensagem"]}, status=200)
 
             user, created = User.objects.get_or_create(phone_number=phone_number)
             if created and nome_contato:
@@ -155,8 +177,7 @@ class InterpretarTransacaoView(APIView):
                             "message_body_filename": "file.png",
                             "message_body_mimetype": "image/png",
                         }
-                        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-                        requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta_grafico, headers=headers)
+                        requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta_grafico, headers=HEADERS)
 
                         return Response(data={"message": "Gráfico gerado com sucesso!"}, status=200)
 
@@ -173,11 +194,7 @@ class InterpretarTransacaoView(APIView):
                 "message_body": mensagem,
             }
 
-            headers = {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-
-            requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=headers)
+            requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
 
             return Response(data=mensagem, status=200)
 
@@ -193,9 +210,5 @@ class InterpretarTransacaoView(APIView):
                 "message_body": "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente.",
             }
 
-            headers = {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-
-            requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=headers)
+            requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
             return Response({"error": f"Erro ao interpretar ou processar mensagem: {str(e)}"}, status=500)
