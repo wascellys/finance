@@ -35,10 +35,10 @@ class InterpretarTransacaoView(APIView):
 
         if len(base64_str) < 5:
             return Response({"error": "Nenhuma mensagem válida foi recebida. Quantidade de caracteres insuficiente."},
-                            status=400)
+                            status=200)
         try:
             if not phone_number:
-                return Response({"error": "Campo 'phone_number' obrigatório."}, status=400)
+                return Response({"error": "Campo 'phone_number' obrigatório."}, status=200)
 
             # Processamento baseado no tipo de mensagem
             if message_type == "audio" and base64_str:
@@ -51,7 +51,7 @@ class InterpretarTransacaoView(APIView):
                 description = base64_str.strip()
 
             if not description:
-                return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=400)
+                return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=200)
             interpretado_raw = interpretar_mensagem(description)
             interpretado = json.loads(interpretado_raw)
 
@@ -182,7 +182,7 @@ class InterpretarTransacaoView(APIView):
                         return Response(data={"message": "Gráfico gerado com sucesso!"}, status=200)
 
             else:
-                return Response({"error": "Tipo de ação não reconhecido."}, status=400)
+                return Response({"error": "Tipo de ação não reconhecido."}, status=200)
 
             resposta = {
                 "apiKey": config("APIKEY_WG"),
