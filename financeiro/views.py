@@ -77,7 +77,7 @@ class InterpretarTransacaoView(APIView):
 
                 requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
 
-                return Response({"error": "Mensagem irrelevante."}, status=400)
+                return Response({"error": "Mensagem irrelevante."}, status=200)
 
             if interpretado["tipo"] == "agradecimento":
                 resposta = {
