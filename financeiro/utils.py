@@ -35,42 +35,38 @@ def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
     return caminho
 
 
-
 def categorias_financeiras_prompt():
     return """
-Use apenas as seguintes categorias e subcategorias (com acentuação e capitalização corretas):
+Use apenas as seguintes subcategorias (com acentuação e capitalização corretas):
 
-➡️ Despesas:
-- Habitação > Aluguel, Condomínio, Manutenção residencial, Reforma, Móveis e decoração
-- Contas residenciais > Energia, Água, Telefone, Internet, Gás, TV por assinatura
-- Supermercado > Mercearia, Açougue, Hortifruti, Frios e laticínios, Padaria, Bebidas, Produtos de limpeza, Produtos de higiene, Alimentos industrializados, Congelados, Petiscos e snacks, Produtos infantis, Utensílios domésticos, Produtos para pets, Produtos de papelaria
-- Alimentação > Refeições e lanches, Ifood, Restaurante, Cafeteria, Alimentos
-- Lazer > Cinema e teatro, Festas e eventos, Hobbies, Viagens, Passeios, Jogos
-- Assinaturas e serviços > Streamings, Aplicativos, Clube de vantagens, Jornais e revistas
-- Compras > Roupas e acessórios, Compras diversas, Eletrônicos, Acessórios para casa, Acessórios para carro
-- Cuidados pessoais > Higiene pessoal, Salão de beleza, Barbearia, Estética, Academia
-- Dívidas e empréstimos > Financiamentos, Empréstimo, Parcelamentos, Cartão de crédito
-- Educação > Escola/Faculdade, Material escolar, Cursos extracurriculares, Cursos online, Livros
-- Família e filhos > Mesada, Ajuda de custo, Creche, Roupas infantis, Atividades infantis
-- Impostos e taxas > Taxas bancárias, IPTU, IPVA, Anuidade de cartão, Multas
-- Investimentos > Reserva de emergência, Aposentadoria, Objetivos, Criptomoedas, Ações
-- Presentes e doações > Dízimo, Presentes, Doações, Caridade
-- Saúde > Medicamentos, Plano de saúde, Consultas particulares, Exames, Terapias
-- Seguros > Seguro de vida, Seguro automotivo, Seguro residencial, Seguro saúde
-- Despesas de trabalho > Custos diversos, Despesas operacionais, Material de escritório, Ferramentas, Transporte a trabalho
-- Transporte > Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento, Pedágio
-- Pets > Ração, Pet shop, Veterinário, Acessórios para pets, Banho e tosa
+Despesas:
+- Aluguel, Condomínio, Manutenção residencial, Reforma, Móveis e decoração
+- Energia, Água, Telefone, Internet, Gás, TV por assinatura
+- Mercearia, Açougue, Hortifruti, Frios e laticínios, Padaria, Bebidas, Produtos de limpeza, Produtos de higiene, Alimentos industrializados, Congelados, Petiscos e snacks, Produtos infantis, Utensílios domésticos, Produtos para pets, Produtos de papelaria
+- Refeições e lanches, Ifood, Restaurante, Cafeteria, Alimentos
+- Cinema e teatro, Festas e eventos, Hobbies, Viagens, Passeios, Jogos
+- Streamings, Aplicativos, Clube de vantagens, Jornais e revistas
+- Roupas e acessórios, Compras diversas, Eletrônicos, Acessórios para casa, Acessórios para carro
+- Higiene pessoal, Salão de beleza, Barbearia, Estética, Academia
+- Financiamentos, Empréstimo, Parcelamentos, Cartão de crédito
+- Escola/Faculdade, Material escolar, Cursos extracurriculares, Cursos online, Livros
+- Mesada, Ajuda de custo, Creche, Roupas infantis, Atividades infantis
+- Taxas bancárias, IPTU, IPVA, Anuidade de cartão, Multas
+- Reserva de emergência, Aposentadoria, Objetivos, Criptomoedas, Ações
+- Dízimo, Presentes, Doações, Caridade
+- Medicamentos, Plano de saúde, Consultas particulares, Exames, Terapias
+- Seguro de vida, Seguro automotivo, Seguro residencial, Seguro saúde
+- Custos diversos, Despesas operacionais, Material de escritório, Ferramentas, Transporte a trabalho
+- Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento, Pedágio
+- Ração, Pet shop, Veterinário, Acessórios para pets, Banho e tosa
 
-➡️ Receitas:
-- Rendas Ativas > Salário/Pró-labore, Freelas/Bônus / Comissão, 13º Salário/Hora extra, Participação nos lucros
-- Rendas Passivas > Rendimentos de investimentos (CDBs, Tesouro, Fundos, etc.), Dividendos de ações e FIIs, Aluguéis, Royalties, Juros recebidos
-- Vendas Eventuais > Bens usados, Marketplace, Venda de milhas, Venda de objetos pessoais
-- Outros > Cashback, Prêmios, Presentes, Herança, Restituição de imposto
+Receitas:
+- Salário/Pró-labore, Freelas/Bônus / Comissão, 13º Salário/Hora extra, Participação nos lucros
+- Rendimentos de investimentos (CDBs, Tesouro, Fundos, etc.), Dividendos de ações e FIIs, Aluguéis, Royalties, Juros recebidos
+- Bens usados, Marketplace, Venda de milhas, Venda de objetos pessoais
+- Cashback, Prêmios, Presentes, Herança, Restituição de imposto
 
-📌 Sempre retorne a subcategoria como o valor da chave "categoria".
-Se o usuário mencionar apenas a categoria principal (ex: Transporte ou Rendas passivas), use exatamente esse nome.
-Caso o usuário mencione que deseja um gráfico, adicione "grafico": true na resposta JSON.
-"""
+📌 Apenas subcategorias são válidas. Se o usuário mencionar apenas a categoria principal, retorne "irrelevante". """
 
 
 def transcrever_audio(caminho):
