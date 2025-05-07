@@ -44,7 +44,7 @@ Use apenas as seguintes categorias e subcategorias (com acentuação e capitaliz
 - Habitação > Aluguel, Condomínio, Manutenção residencial, Reforma, Móveis e decoração
 - Contas residenciais > Energia, Água, Telefone, Internet, Gás, TV por assinatura
 - Supermercado > Mercearia, Açougue, Hortifruti, Frios e laticínios, Padaria, Bebidas, Produtos de limpeza, Produtos de higiene, Alimentos industrializados, Congelados, Petiscos e snacks, Produtos infantis, Utensílios domésticos, Produtos para pets, Produtos de papelaria
-- Alimentação > Refeições e lanches, Ifood, Restaurante, Cafeteria
+- Alimentação > Refeições e lanches, Ifood, Restaurante, Cafeteria, Alimentos
 - Lazer > Cinema e teatro, Festas e eventos, Hobbies, Viagens, Passeios, Jogos
 - Assinaturas e serviços > Streamings, Aplicativos, Clube de vantagens, Jornais e revistas
 - Compras > Roupas e acessórios, Compras diversas, Eletrônicos, Acessórios para casa, Acessórios para carro
