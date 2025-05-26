@@ -1,0 +1,109 @@
+{% extends "dashboard/layouts/base.html" %}
+
+{% block content %}
+<div class="fade-in">
+  <h1 class="h3 mb-4">Transações</h1>
+  
+  <!-- Filtros -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Filtros</h5>
+    </div>
+    <div class="card-body">
+      <form method="get" action="{% url 'transactions_list' %}">
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label for="data_inicial">Data Inicial</label>
+            <input type="date" class="form-control" id="data_inicial" name="data_inicial" value="{{ data_inicial }}">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="data_final">Data Final</label>
+            <input type="date" class="form-control" id="data_final" name="data_final" value="{{ data_final }}">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="categoria">Categoria</label>
+            <select class="form-control" id="categoria" name="categoria">
+              <option value="all">Todas</option>
+              {% for category in categories %}
+              <option value="{{ category.id }}" {% if categoria_selecionada == category.id|stringformat:"s" %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="tipo">Tipo</label>
+            <select class="form-control" id="tipo" name="tipo">
+              <option value="all">Todos</option>
+              <option value="receita" {% if tipo_selecionado == 'receita' %}selected{% endif %}>Receita</option>
+              <option value="despesa" {% if tipo_selecionado == 'despesa' %}selected{% endif %}>Despesa</option>
+            </select>
+          </div>
+        </div>
+        <div class="text-right">
+          <button type="submit" class="btn btn-primary">Filtrar</button>
+          <a href="{% url 'transactions_list' %}" class="btn btn-outline-secondary">Limpar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Tabela de Transações -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Lista de Transações</h5>
+      <span class="badge badge-primary">{{ transactions.count }} transações</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Categoria</th>
+              <th>Valor</th>
+              <th>Tipo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in transactions %}
+            <tr>
+              <td>{{ transaction.date|date:"d/m/Y" }}</td>
+              <td>{{ transaction.description|title }}</td>
+              <td>{{ transaction.category.name|title }}</td>
+              <td class="{% if transaction.tipo == 'receita' %}text-receita-table{% else %}text-despesa-table{% endif %}">
+                R$ {{ transaction.amount|floatformat:2 }}
+              </td>
+              <td>
+                <span class="badge {% if transaction.tipo == 'receita' %}badge-success{% else %}badge-danger{% endif %}">
+                  {{ transaction.tipo|title }}
+                </span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-3">Nenhuma transação encontrada</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+    // Aplicar datepicker aos campos de data
+    // Nota: Isso é opcional, pois o navegador já fornece um seletor de data nativo
+    
+    // Atualizar formulário automaticamente quando os filtros mudarem
+    $('#categoria, #tipo').change(function() {
+      $(this).closest('form').submit();
+    });
+  });
+</script>
+{% endblock %}

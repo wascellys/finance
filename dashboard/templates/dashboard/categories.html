@@ -1,0 +1,198 @@
+{% extends "dashboard/layouts/base.html" %}
+{% load custom_filters %}
+{% block content %}
+<div class="fade-in">
+  <h1 class="h3 mb-4">Análise por Categorias</h1>
+
+  <div class="row">
+    <!-- Gráfico de Categorias Principais -->
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0">Distribuição por Categoria Principal</h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="mainCategoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumo de Categorias -->
+    <div class="col-lg-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0">Resumo por Categoria</h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Categoria Principal</th>
+                  <th>Subcategoria</th>
+                  <th>Valor</th>
+                  <th>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in subcategory_data %}
+                <tr>
+                  <td>{{ item.main_category|title }}</td>
+                  <td>{{ item.subcategory|title }}</td>
+                  <td class="text-despesa-table">R$ {{ item.total|floatformat:2 }}</td>
+                  <td>
+                    {% with percentage=item.total|div:total_despesas|mul:100 %}
+                    {{ percentage|floatformat:1 }}%
+                    {% endwith %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="4" class="text-center py-3">Nenhum dado disponível</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evolução por Categoria -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Evolução de Gastos por Categoria</h5>
+    </div>
+    <div class="card-body">
+      <div class="chart-container" style="height: 400px;">
+        <canvas id="categoryEvolutionChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+    // Dados para os gráficos
+    const mainCategoryData = {{ main_category_data|safe }};
+
+    // Configuração do gráfico de categorias principais
+    let mainCategoryCtx = document.getElementById('mainCategoryChart').getContext('2d');
+
+    // Preparar dados para o gráfico de pizza
+    const categorias = Object.keys(mainCategoryData);
+    const valores = Object.values(mainCategoryData);
+
+    // Gerar cores aleatórias para as categorias
+    const backgroundColors = categorias.map(() => {
+      const r = Math.floor(Math.random() * 255);
+      const g = Math.floor(Math.random() * 255);
+      const b = Math.floor(Math.random() * 255);
+      return `rgba(${r}, ${g}, ${b}, 0.7)`;
+    });
+
+    // Criar gráfico de pizza
+    if (categorias.length > 0) {
+      new Chart(mainCategoryCtx, {
+        type: 'pie',
+        data: {
+          labels: categorias,
+          datasets: [{
+            data: valores,
+            backgroundColor: backgroundColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                boxWidth: 12
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.raw;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return `${context.label}: R$ ${value.toFixed(2)} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      // Se não houver dados, exibir mensagem
+      $('#mainCategoryChart').parent().html('<div class="text-center py-5">Sem dados para exibir</div>');
+    }
+
+    // Configuração do gráfico de evolução por categoria
+    // Este é um exemplo de gráfico de linha que mostra a evolução dos gastos por categoria ao longo do tempo
+    // Na implementação real, você precisaria buscar esses dados da API
+
+    let categoryEvolutionCtx = document.getElementById('categoryEvolutionChart').getContext('2d');
+
+    // Dados de exemplo - em produção, estes viriam da API
+    const evolutionData = {
+      labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+      datasets: categorias.map((categoria, index) => {
+        return {
+          label: categoria,
+          data: Array.from({length: 6}, () => Math.floor(Math.random() * 1000)),
+          backgroundColor: backgroundColors[index],
+          borderColor: backgroundColors[index],
+          borderWidth: 2,
+          fill: false,
+          tension: 0.1
+        };
+      })
+    };
+
+    if (categorias.length > 0) {
+      new Chart(categoryEvolutionCtx, {
+        type: 'line',
+        data: evolutionData,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': R$ ' + context.raw.toFixed(2);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'R$ ' + value.toFixed(2);
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      // Se não houver dados, exibir mensagem
+      $('#categoryEvolutionChart').parent().html('<div class="text-center py-5">Sem dados para exibir</div>');
+    }
+  });
+</script>
+{% endblock %}

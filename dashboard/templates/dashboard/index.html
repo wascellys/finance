@@ -1,0 +1,282 @@
+{% extends "dashboard/layouts/base.html" %}
+
+{% block content %}
+<div class="fade-in">
+  <h1 class="h3 mb-4">Dashboard</h1>
+  
+  <div class="row">
+    <!-- Saldo -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">SALDO</h5>
+          <h2 class="display-4 text-saldo">R$ {{ saldo|floatformat:2 }}</h2>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Receitas -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">RECEITAS</h5>
+          <h2 class="display-4 text-receita">R$ {{ receitas|floatformat:2 }}</h2>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Despesas -->
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">DESPESAS</h5>
+          <h2 class="display-4 text-despesa">R$ {{ despesas|floatformat:2 }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row">
+    <!-- Fluxo de Caixa -->
+    <div class="col-lg-8 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Fluxo de Caixa</h5>
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn btn-outline-primary active" data-period="30">30 dias</button>
+            <button type="button" class="btn btn-outline-primary" data-period="60">60 dias</button>
+            <button type="button" class="btn btn-outline-primary" data-period="90">90 dias</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="fluxoCaixaChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Distribuição de Despesas -->
+    <div class="col-lg-4 mb-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Distribuição de Despesas</h5>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="despesasChart"></canvas>
+          </div>
+        </div>
+        <div class="card-footer text-center">
+          <a href="{% url 'categories_analysis' %}" class="btn btn-sm btn-outline-primary">Ver análise detalhada →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Últimas Transações -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Últimas Transações</h5>
+      <a href="{% url 'transactions_list' %}" class="btn btn-sm btn-outline-primary">Ver todas →</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Categoria</th>
+              <th>Valor</th>
+              <th>Tipo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in transactions %}
+            <tr>
+              <td>{{ transaction.date|date:"d/m/Y" }}</td>
+              <td>{{ transaction.description|title }}</td>
+              <td>{{ transaction.category.name|title }}</td>
+              <td class="{% if transaction.tipo == 'receita' %}text-receita-table{% else %}text-despesa-table{% endif %}">
+                R$ {{ transaction.amount|floatformat:2 }}
+              </td>
+              <td>
+                <span class="badge {% if transaction.tipo == 'receita' %}badge-success{% else %}badge-danger{% endif %}">
+                  {{ transaction.tipo|title }}
+                </span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-3">Nenhuma transação encontrada</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function() {
+    // Dados para os gráficos
+    const chartData = {{ chart_data|safe }};
+    
+    // Cores para os gráficos
+    const chartColors = {
+      receitas: 'rgba(40, 167, 69, 0.7)',
+      despesas: 'rgba(220, 53, 69, 0.7)',
+      saldo: 'rgba(0, 123, 255, 0.7)'
+    };
+    
+    // Configuração do gráfico de fluxo de caixa
+    let fluxoCaixaCtx = document.getElementById('fluxoCaixaChart').getContext('2d');
+    let fluxoCaixaChart;
+    
+    // Função para carregar dados do gráfico de fluxo de caixa
+    function loadFluxoCaixaData(period = 30) {
+      $.ajax({
+        url: "{% url 'chart_data_api' %}",
+        data: { period: period },
+        dataType: 'json',
+        success: function(data) {
+          if (fluxoCaixaChart) {
+            fluxoCaixaChart.destroy();
+          }
+          
+          fluxoCaixaChart = new Chart(fluxoCaixaCtx, {
+            type: 'line',
+            data: {
+              labels: data.dates,
+              datasets: [
+                {
+                  label: 'Receitas',
+                  data: data.receitas,
+                  backgroundColor: chartColors.receitas,
+                  borderColor: chartColors.receitas,
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.1
+                },
+                {
+                  label: 'Despesas',
+                  data: data.despesas,
+                  backgroundColor: chartColors.despesas,
+                  borderColor: chartColors.despesas,
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.1
+                },
+                {
+                  label: 'Saldo',
+                  data: data.saldos,
+                  backgroundColor: chartColors.saldo,
+                  borderColor: chartColors.saldo,
+                  borderWidth: 2,
+                  fill: false,
+                  tension: 0.1
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'top',
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      return context.dataset.label + ': R$ ' + context.raw.toFixed(2);
+                    }
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    callback: function(value) {
+                      return 'R$ ' + value.toFixed(2);
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+      });
+    }
+    
+    // Carregar dados iniciais
+    loadFluxoCaixaData();
+    
+    // Botões de período
+    $('.btn-group button').on('click', function() {
+      $('.btn-group button').removeClass('active');
+      $(this).addClass('active');
+      loadFluxoCaixaData($(this).data('period'));
+    });
+    
+    // Configuração do gráfico de distribuição de despesas
+    let despesasCtx = document.getElementById('despesasChart').getContext('2d');
+    
+    // Preparar dados para o gráfico de pizza
+    const categorias = Object.keys(chartData.categorias_despesas || {});
+    const valores = Object.values(chartData.categorias_despesas || {});
+    
+    // Gerar cores aleatórias para as categorias
+    const backgroundColors = categorias.map(() => {
+      const r = Math.floor(Math.random() * 255);
+      const g = Math.floor(Math.random() * 255);
+      const b = Math.floor(Math.random() * 255);
+      return `rgba(${r}, ${g}, ${b}, 0.7)`;
+    });
+    
+    // Criar gráfico de pizza
+    if (categorias.length > 0) {
+      new Chart(despesasCtx, {
+        type: 'doughnut',
+        data: {
+          labels: categorias,
+          datasets: [{
+            data: valores,
+            backgroundColor: backgroundColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                boxWidth: 12
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.raw;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return `${context.label}: R$ ${value.toFixed(2)} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      // Se não houver dados, exibir mensagem
+      $('#despesasChart').parent().html('<div class="text-center py-5">Sem dados para exibir</div>');
+    }
+  });
+</script>
+{% endblock %}
