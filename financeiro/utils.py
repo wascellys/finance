@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import time
 import uuid
 from datetime import datetime
 import plotly.io as pio
@@ -60,6 +61,7 @@ Despesas:
 - Custos diversos, Despesas operacionais, Material de escritório, Ferramentas, Transporte a trabalho
 - Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento, Pedágio
 - Ração, Pet shop, Veterinário, Acessórios para pets, Banho e tosa
+- Sem categoria
 
 Receitas:
 - Salário/Pró-labore, Freelas/Bônus / Comissão, 13º Salário/Hora extra, Participação nos lucros
@@ -78,34 +80,32 @@ def transcrever_audio(caminho):
         return result["text"]
 
 
-def interpretar_imagem_gpt4_vision(image):
-    image = limpar_base64(image)
-
-    prompt_sistema = (
-            "Você é um assistente financeiro..."  # sua mensagem original
-            + categorias_financeiras_prompt()
-    )
-
-    response = openai.ChatCompletion.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": prompt_sistema},
-            {
-                "role": "user",
-                "content": [
+def interpretar_imagem_gpt4_vision(image, retries=3):
+    for attempt in range(retries):
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": categorias_financeiras_prompt},
                     {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image}"
-                        }
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{image}"
+                                }
+                            }
+                        ]
                     }
-                ]
-            }
-        ],
-        max_tokens=1000
-    )
-
-    return response["choices"][0]["message"]["content"]
+                ],
+                max_tokens=1000
+            )
+            return response["choices"][0]["message"]["content"]
+        except Exception as e:
+            print(f"Tentativa {attempt + 1} falhou. Erro: {e}")
+            time.sleep(2)
+    return None
 
 
 agradecimentos = ["obrigado", "obrigada", "valeu", "agradeço", "muito obrigado", "grato", "grata"]
@@ -177,16 +177,28 @@ def formatar_resposta_registro(transacao):
 def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=None, tipo=None):
     if not transacoes:
         return "❌ *Nenhum Registro Encontrado Para Este Período*"
-    total = sum([t.amount for t in transacoes])
+
     inicio = data_inicial.strftime("%d/%m/%Y")
     fim = data_final.strftime("%d/%m/%Y")
-    total_str = f"R$ {total:.2f}".replace('.', ',')
+
+    receitas = [t.amount for t in transacoes if t.tipo == 'receita']
+    despesas = [t.amount for t in transacoes if t.tipo == 'despesa']
+
+    total_receita = sum(receitas)
+    total_despesa = sum(despesas)
+    saldo = total_receita - total_despesa
+
+    total_receita_str = f"R$ {total_receita:.2f}".replace('.', ',')
+    total_despesa_str = f"R$ {total_despesa:.2f}".replace('.', ',')
+    saldo_str = f"R$ {saldo:.2f}".replace('.', ',')
 
     header = (
         "📊 *Resumo de transações*\n"
         f"_Período:_ *{inicio}* até *{fim}*\n"
         f"_Categoria:_ *{categoria if categoria else 'TODAS'}*\n"
-        f"_Total:_ *{total_str.upper()}*\n\n"
+        f"_Receitas:_ *{total_receita_str}*\n"
+        f"_Despesas:_ *{total_despesa_str}*\n"
+        f"_Saldo:_ *{saldo_str}*\n\n"
         "*Transações:* \n"
     )
 
@@ -195,7 +207,8 @@ def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=N
         valor = f"R$ {t.amount:.2f}".replace('.', ',')
         desc = t.description
         data = t.created_at.strftime("%d/%m/%Y")
-        linhas.append(f"{i}. *{valor}* - `{desc}` _({data})_ \n")
+        tipo_str = "⬆️ Receita" if t.tipo == "receita" else "⬇️ Despesa"
+        linhas.append(f"{i}. *{valor}* - `{desc}` _({data})_ {tipo_str}\n")
 
     return header + "\n" + "\n".join(linhas)
 

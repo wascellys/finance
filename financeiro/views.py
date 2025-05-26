@@ -110,7 +110,7 @@ class InterpretarTransacaoView(APIView):
 
                 if not categoria:
                     print("CATEGORIA não encontrada:", interpretado["categoria"])
-                    categoria = Category.objects.create(name=interpretado["categoria"])
+                    categoria = Category.objects.get(name__icontains="Sem categoria")
 
                 tipo_lancamento = interpretado.get("tipo_lancamento", "despesa")
                 data_transacao = interpretado.get("data")
