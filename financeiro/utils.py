@@ -249,7 +249,7 @@ def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=N
         token_obj.expires_at = timezone.now() + timedelta(days=1)
         token_obj.save()
 
-    url = f"{config('BASE_URL_SITE')}/dashboard/tmp/{token_obj.token}"
+    url = f"{config('BASE_URL_SITE')}/dashboard/temp/{token_obj.token}"
 
     link = (
         f"\n🔗 Você também pode verificar seu extrato completo em:\n\n {url}"
