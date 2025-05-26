@@ -1,6 +1,6 @@
 import json
 import os
-import re
+from django.utils import timezone
 import time
 import uuid
 from datetime import datetime
@@ -11,6 +11,10 @@ import pytz
 from decouple import config
 import openai
 import plotly.graph_objects as go
+from datetime import timedelta
+
+
+from dashboard.models import TemporaryLink
 
 openai.api_key = config('APIKEY')
 
@@ -231,7 +235,27 @@ def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=N
         tipo_str = "⬆️ Receita" if t.tipo == "receita" else "⬇️ Despesa"
         linhas.append(f"{i}. *{valor}* - `{desc}` _({data})_ {tipo_str}\n")
 
-    return header + "\n" + "\n".join(linhas)
+    # Geração de link temporário
+    token_obj, created = TemporaryLink.objects.get_or_create(
+        user=transacoes[0].user,
+        defaults={
+            'token': uuid.uuid4().hex,
+            'expires_at': timezone.now() + timedelta(days=1)
+        }
+    )
+
+    if not created and token_obj.expires_at < timezone.now():
+        token_obj.token = uuid.uuid4().hex
+        token_obj.expires_at = timezone.now() + timedelta(days=1)
+        token_obj.save()
+
+    url = f"{config('BASE_URL_SITE')}/dashboard/tmp/{token_obj.token}"
+
+    link = (
+        f"\n🔗 Você também pode verificar seu extrato completo em:\n\n {url}"
+    )
+
+    return header + "\n" + "".join(linhas) + "\n" + link
 
 
 def gerar_grafico_base64(transacoes):
