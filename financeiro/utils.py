@@ -159,9 +159,9 @@ def interpretar_mensagem(mensagem_usuario):
             "📚 *Palavras associadas a despesas* (inferir tipo_lancamento = 'despesa'):\n"
             "- gastei, paguei, comprei, adquiri, investi, doei, transferi, saquei, apliquei, pagaram, quitar, desembolsei\n\n"
             "📚 *Palavras associadas a receitas* (inferir tipo_lancamento = 'receita'):\n"
-            "- recebi, ganhei, entrou, caiu na conta, depósito, pagaram para mim, crédito, bônus, prêmio, herança\n\n"
+            "- recebi, ganhei, entrou, caiu na conta, depósito, pagaram para mim, crédito, bônus, prêmio, herança, ou sinonimos\n\n"
             "📚 *Palavras associadas a consulta*:\n"
-            "- quero ver, me mostre, consultar, quanto gastei, quanto recebi, listar, exibir, mostrar, extrato, relatório\n\n"
+            "- quero ver, me mostre, consultar, quanto gastei, quanto recebi, listar, exibir, mostrar, extrato, relatório, saldo, meu saldo ou sinonimos\n\n"
             + categorias_financeiras_prompt()
     )
 
