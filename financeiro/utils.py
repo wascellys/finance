@@ -158,6 +158,7 @@ def interpretar_mensagem(mensagem_usuario):
             "- Sempre use o nome exato da subcategoria com acentuação e capitalização corretas (ex: \"IPVA\", \"Plano de saúde\")\n"
             "- Retorne \"categoria\": \"Sem categoria\" apenas se o usuário mencionar isso literalmente\n"
             "- Se não houver categoria mencionada na consulta, omita esse campo ou use null\n"
+            "- Se não periodo mensinado na consulta, considerar o periodo do primeiro dia do ano até o dia de hoje\n"
             "- Só deve ser gerado gráfico caso o usuário mencione que quer gráfico\n"
             "- Sempre inclua o campo \"tipo_lancamento\" quando for possível inferir\n\n"
             "📚 *Palavras associadas a despesas* (inferir tipo_lancamento = 'despesa'):\n"
