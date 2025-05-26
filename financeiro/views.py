@@ -74,7 +74,6 @@ class InterpretarTransacaoView(APIView):
                     ),
                 }
 
-
                 requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
 
                 return Response({"error": "Mensagem irrelevante."}, status=200)
@@ -139,22 +138,30 @@ class InterpretarTransacaoView(APIView):
                 )
 
                 categoria_nome = interpretado.get("categoria")
+
                 if categoria_nome:
                     categoria_nome_normalizada = normalizar(categoria_nome)
-                    encontrada = False
 
-                    for cat in Category.objects.all():
-                        if normalizar(cat.name) == categoria_nome_normalizada:
-                            transacoes = transacoes.filter(category=cat)
-                            encontrada = True
-                            break
-
-                    if not encontrada:
-                        for mc in MainCategory.objects.all():
-                            if normalizar(mc.name) == categoria_nome_normalizada:
-                                subcategorias = Category.objects.filter(main_category=mc)
-                                transacoes = transacoes.filter(category__in=subcategorias)
+                    if categoria_nome_normalizada in ["todas", "tudo", "geral"]:
+                        categoria_nome = None
+                    else:
+                        encontrada = False
+                        for cat in Category.objects.all():
+                            if normalizar(cat.name) == categoria_nome_normalizada:
+                                transacoes = transacoes.filter(category=cat)
+                                encontrada = True
                                 break
+
+                        if not encontrada:
+                            for mc in MainCategory.objects.all():
+                                if normalizar(mc.name) == categoria_nome_normalizada:
+                                    subcategorias = Category.objects.filter(main_category=mc)
+                                    transacoes = transacoes.filter(category__in=subcategorias)
+                                    encontrada = True
+                                    break
+
+                        if not encontrada:
+                            categoria_nome = None
 
                 tipo_lancamento = interpretado.get("tipo_lancamento")
                 if tipo_lancamento:
