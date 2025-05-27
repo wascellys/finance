@@ -13,7 +13,6 @@ import openai
 import plotly.graph_objects as go
 from datetime import timedelta
 
-
 from dashboard.models import TemporaryLink
 
 openai.api_key = config('APIKEY')
@@ -43,38 +42,91 @@ def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
 
 def categorias_financeiras_prompt():
     return """
-Use apenas as seguintes subcategorias (com acentuação e capitalização corretas):
+Use apenas as seguintes subcategorias com suas respectivas categorias principais (mantenha acentuação e capitalização corretas):
 
 Despesas:
+
+Categoria principal: HABITAÇÃO
 - Aluguel, Condomínio, Manutenção residencial, Reforma, Móveis e decoração
+
+Categoria principal: CONTAS RESIDENCIAIS
 - Energia, Água, Telefone, Internet, Gás, TV por assinatura
+
+Categoria principal: SUPERMERCADO
 - Mercearia, Açougue, Hortifruti, Frios e laticínios, Padaria, Bebidas, Produtos de limpeza, Produtos de higiene, Alimentos industrializados, Congelados, Petiscos e snacks, Produtos infantis, Utensílios domésticos, Produtos para pets, Produtos de papelaria
+
+Categoria principal: ALIMENTAÇÃO
 - Refeições e lanches, Ifood, Restaurante, Cafeteria, Alimentos
+
+Categoria principal: LAZER
 - Cinema e teatro, Festas e eventos, Hobbies, Viagens, Passeios, Jogos
+
+Categoria principal: ASSINATURAS E SERVIÇOS
 - Streamings, Aplicativos, Clube de vantagens, Jornais e revistas
+
+Categoria principal: COMPRAS
 - Roupas e acessórios, Compras diversas, Eletrônicos, Acessórios para casa, Acessórios para carro
+
+Categoria principal: CUIDADOS PESSOAIS
 - Higiene pessoal, Salão de beleza, Barbearia, Estética, Academia
+
+Categoria principal: DÍVIDAS E EMPRÉSTIMOS
 - Financiamentos, Empréstimo, Parcelamentos, Cartão de crédito
+
+Categoria principal: EDUCAÇÃO
 - Escola/Faculdade, Material escolar, Cursos extracurriculares, Cursos online, Livros
+
+Categoria principal: FAMÍLIA E FILHOS
 - Mesada, Ajuda de custo, Creche, Roupas infantis, Atividades infantis
+
+Categoria principal: IMPOSTOS E TAXAS
 - Taxas bancárias, IPTU, IPVA, Anuidade de cartão, Multas
+
+Categoria principal: INVESTIMENTOS
 - Reserva de emergência, Aposentadoria, Objetivos, Criptomoedas, Ações
+
+Categoria principal: PRESENTES E DOAÇÕES
 - Dízimo, Presentes, Doações, Caridade
+
+Categoria principal: SAÚDE
 - Medicamentos, Plano de saúde, Consultas particulares, Exames, Terapias
+
+Categoria principal: SEGUROS
 - Seguro de vida, Seguro automotivo, Seguro residencial, Seguro saúde
+
+Categoria principal: DESPESAS DE TRABALHO
 - Custos diversos, Despesas operacionais, Material de escritório, Ferramentas, Transporte a trabalho
+
+Categoria principal: TRANSPORTE
 - Combustível, Manutenção, Táxi/Transporte por aplicativo, Transporte público, Estacionamento, Pedágio
+
+Categoria principal: PETS
 - Ração, Pet shop, Veterinário, Acessórios para pets, Banho e tosa
+
+Categoria principal: OUTROS
 - Sem categoria
 
 Receitas:
+
+Categoria principal: RENDAS ATIVAS
 - Salário/Pró-labore, Freelas/Bônus / Comissão, 13º Salário/Hora extra, Participação nos lucros
+
+Categoria principal: RENDAS PASSIVAS
 - Rendimentos de investimentos (CDBs, Tesouro, Fundos, etc.), Dividendos de ações e FIIs, Aluguéis, Royalties, Juros recebidos
+
+Categoria principal: VENDAS EVENTUAIS
 - Bens usados, Marketplace, Venda de milhas, Venda de objetos pessoais
+
+Categoria principal: OUTROS
 - Cashback, Prêmios, Presentes, Herança, Restituição de imposto
 
-📌 Apenas subcategorias são válidas. Se o usuário mencionar apenas a categoria principal, retorne "irrelevante". 
-   Caso o usuário faça algum agradeicmento, retorne "agradecimento".
+📌 Regras importantes:
+- Sempre preencha o campo "categoria" com a subcategoria mencionada pelo usuário.
+- Preencha o campo "categoria_principal" apenas se o usuário mencionar diretamente uma categoria principal, sem indicar uma subcategoria específica.
+- Se o usuário mencionar uma subcategoria (ex: Ifood, IPVA), a "categoria_principal" deve ser null.
+- A subcategoria sempre tem prioridade sobre a principal.
+- Se o usuário mencionar apenas uma categoria principal (ex: EDUCAÇÃO), a subcategoria não deve ser preenchida e a resposta deve ser "tipo": "irrelevante".
+- Se o usuário fizer um agradecimento, retorne "tipo": "agradecimento".
 """
 
 
@@ -136,7 +188,7 @@ def interpretar_mensagem(mensagem_usuario):
             '  "tipo": "registro",\n'
             '  "valor": 1200,\n'
             '  "categoria": "IPVA",\n'
-            '  "descricao": "paguei o IPVA",\n'
+            '  "descricao": "Paguei o IPVA",\n'
             '  "data": "2025-04-04",\n'
             '  "tipo_lancamento": "despesa"\n'
             "}\n\n"
@@ -146,6 +198,7 @@ def interpretar_mensagem(mensagem_usuario):
             '  "data_inicial": "2025-04-01",\n'
             '  "data_final": "2025-04-30",\n'
             '  "categoria": "Plano de saúde",\n'
+            '  "categoria_principal": null,\n'
             '  "tipo_lancamento": "despesa",\n'
             '  "grafico": false\n'
             "}\n\n"
@@ -154,19 +207,29 @@ def interpretar_mensagem(mensagem_usuario):
             "4. Se a mensagem não estiver relacionada a finanças, retorne:\n"
             '{ "tipo": "irrelevante" }\n\n'
             "📌 **Regras importantes:**\n"
+            "- Deve sempre passar uma descrição para a transação de registro\n"
             "- Sempre use datas no formato ISO: yyyy-mm-dd\n"
             "- Sempre use o nome exato da subcategoria com acentuação e capitalização corretas (ex: \"IPVA\", \"Plano de saúde\")\n"
             "- Retorne \"categoria\": \"Sem categoria\" apenas se o usuário mencionar isso literalmente\n"
             "- Se não houver categoria mencionada na consulta, omita esse campo ou use null\n"
-            "- Se não periodo mensinado na consulta, considerar o periodo do primeiro dia do ano até o dia de hoje\n"
+            "- Se não houver período mencionado na consulta, considerar o período do primeiro dia do ano até hoje\n"
             "- Só deve ser gerado gráfico caso o usuário mencione que quer gráfico\n"
             "- Sempre inclua o campo \"tipo_lancamento\" quando for possível inferir\n\n"
+            "✅ Se o usuário mencionar uma *subcategoria específica* (ex: Ifood, IPVA):\n"
+            "- Preencha \"categoria\" com a subcategoria mencionada\n"
+            "- Defina \"categoria_principal\" como null\n"
+            "- A subcategoria sempre tem prioridade sobre qualquer categoria principal\n\n"
+            "❌ Se o usuário mencionar apenas uma *categoria principal* (ex: EDUCAÇÃO, TRANSPORTE):\n"
+            "- Defina \"categoria_principal\" com o nome da categoria principal corretamente capitalizado\n"
+            "- Não preencha o campo \"categoria\"\n"
+            "- Se não for possível identificar uma subcategoria, mas for claramente uma categoria principal, continue com \"categoria_principal\"\n"
+            "- Caso a mensagem for vaga e contiver apenas uma categoria ampla, considere retornar \"tipo\": \"irrelevante\"\n\n"
             "📚 *Palavras associadas a despesas* (inferir tipo_lancamento = 'despesa'):\n"
             "- gastei, paguei, comprei, adquiri, investi, doei, transferi, saquei, apliquei, pagaram, quitar, desembolsei\n\n"
             "📚 *Palavras associadas a receitas* (inferir tipo_lancamento = 'receita'):\n"
-            "- recebi, ganhei, entrou, caiu na conta, depósito, pagaram para mim, crédito, bônus, prêmio, herança, ou sinonimos\n\n"
+            "- recebi, ganhei, entrou, caiu na conta, depósito, pagaram para mim, crédito, bônus, prêmio, herança, ou sinônimos\n\n"
             "📚 *Palavras associadas a consulta*:\n"
-            "- quero ver, me mostre, consultar, quanto gastei, quanto recebi, listar, exibir, mostrar, extrato, relatório, saldo, meu saldo ou sinonimos\n\n"
+            "- quero ver, me mostre, consultar, quanto gastei, quanto recebi, listar, exibir, mostrar, extrato, relatório, saldo, meu saldo ou sinônimos\n\n"
             + categorias_financeiras_prompt()
     )
 

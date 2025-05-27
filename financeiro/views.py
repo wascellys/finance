@@ -22,7 +22,6 @@ def normalizar(texto):
 
 class InterpretarTransacaoView(APIView):
     def post(self, request):
-
         data = request.POST
 
         message_type = data.get("message_type", "text").strip().lower()
@@ -36,6 +35,7 @@ class InterpretarTransacaoView(APIView):
         if len(base64_str) < 5:
             return Response({"error": "Nenhuma mensagem válida foi recebida. Quantidade de caracteres insuficiente."},
                             status=200)
+
         try:
             if not phone_number:
                 return Response({"error": "Campo 'phone_number' obrigatório."}, status=200)
@@ -47,11 +47,11 @@ class InterpretarTransacaoView(APIView):
             elif message_type == "image" and base64_str:
                 description = interpretar_imagem_gpt4_vision(base64_str)
             else:
-                # Para texto ou fallback
                 description = base64_str.strip()
 
             if not description:
                 return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=200)
+
             interpretado_raw = interpretar_mensagem(description)
             interpretado = json.loads(interpretado_raw)
 
@@ -66,16 +66,14 @@ class InterpretarTransacaoView(APIView):
                     "chat_type": "user",
                     "message_type": "text",
                     "message_body": (
-                        "Não conseguimos processar sua mensagem 🥺. \n"
-                        "Para registrar um gasto, utilize palavras como *gastei*, *paguei*, *compra*, seguido do valor e categoria. \n"
-                        "Para consultar despesas ou receitas, você pode usar expressões como *quanto gastei em alimentação* ou *consultar minhas receitas*. \n\n"
-                        "Exemplos: 'Gastei 50 reais em supermercado' ou 'Consultar despesas de transporte em abril'. \n\n"
+                        "Não conseguimos processar sua mensagem 🥺.\n"
+                        "Para registrar um gasto, utilize palavras como *gastei*, *paguei*, *compra*, seguido do valor e categoria.\n"
+                        "Para consultar despesas ou receitas, use expressões como *quanto gastei em alimentação* ou *consultar minhas receitas*.\n\n"
+                        "Exemplos: 'Gastei 50 reais em supermercado' ou 'Consultar despesas de transporte em abril'.\n\n"
                         "Tente novamente! 😊"
                     ),
                 }
-
                 requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
-
                 return Response({"error": "Mensagem irrelevante."}, status=200)
 
             if interpretado["tipo"] == "agradecimento":
@@ -88,9 +86,7 @@ class InterpretarTransacaoView(APIView):
                     "message_type": "text",
                     "message_body": interpretado["mensagem"],
                 }
-
                 requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
-
                 return Response({"message": interpretado["mensagem"]}, status=200)
 
             user, created = User.objects.get_or_create(phone_number=phone_number)
@@ -137,37 +133,28 @@ class InterpretarTransacaoView(APIView):
                     date__date__lte=data_final
                 )
 
+                categoria_principal = interpretado.get("categoria_principal")
                 categoria_nome = interpretado.get("categoria")
 
-                if categoria_nome:
+                if categoria_principal:
+                    main_category = MainCategory.objects.filter(name__icontains=categoria_principal).first()
+                    if main_category:
+                        transacoes = transacoes.filter(category__main_category=main_category)
+                elif categoria_nome:
                     categoria_nome_normalizada = normalizar(categoria_nome)
-
-                    if categoria_nome_normalizada in ["todas", "tudo", "geral"]:
-                        categoria_nome = None
-                    else:
-                        encontrada = False
-                        for cat in Category.objects.all():
-                            if normalizar(cat.name) == categoria_nome_normalizada:
-                                transacoes = transacoes.filter(category=cat)
-                                encontrada = True
-                                break
-
-                        if not encontrada:
-                            for mc in MainCategory.objects.all():
-                                if normalizar(mc.name) == categoria_nome_normalizada:
-                                    subcategorias = Category.objects.filter(main_category=mc)
-                                    transacoes = transacoes.filter(category__in=subcategorias)
-                                    encontrada = True
-                                    break
-
-                        if not encontrada:
-                            categoria_nome = None
+                    if categoria_nome_normalizada not in ["todas", "tudo", "geral"]:
+                        categoria = Category.objects.filter(name__icontains=categoria_nome).first()
+                        if categoria:
+                            transacoes = transacoes.filter(category=categoria)
 
                 tipo_lancamento = interpretado.get("tipo_lancamento")
                 if tipo_lancamento:
                     transacoes = transacoes.filter(tipo=tipo_lancamento)
 
-                mensagem = formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria_nome,
+
+                categoria_para_mensagem = categoria_principal if categoria_principal else categoria_nome
+
+                mensagem = formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria_para_mensagem,
                                                       tipo_lancamento)
 
                 if interpretado.get("grafico", False):
@@ -185,7 +172,6 @@ class InterpretarTransacaoView(APIView):
                             "message_body_mimetype": "image/png",
                         }
                         requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta_grafico, headers=HEADERS)
-
                         return Response(data={"message": "Gráfico gerado com sucesso!"}, status=200)
 
             else:
@@ -202,11 +188,9 @@ class InterpretarTransacaoView(APIView):
             }
 
             requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
-
             return Response(data=mensagem, status=200)
 
         except Exception as e:
-
             resposta = {
                 "apiKey": config("APIKEY_WG"),
                 "phone_number": config("BOT_NUMBER"),
@@ -216,6 +200,5 @@ class InterpretarTransacaoView(APIView):
                 "message_type": "text",
                 "message_body": "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente.",
             }
-
             requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
             return Response({"error": f"Erro ao interpretar ou processar mensagem: {str(e)}"}, status=500)
