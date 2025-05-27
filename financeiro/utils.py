@@ -125,7 +125,9 @@ Categoria principal: OUTROS
 - Preencha o campo "categoria_principal" apenas se o usuário mencionar diretamente uma categoria principal, sem indicar uma subcategoria específica.
 - Se o usuário mencionar uma subcategoria (ex: Ifood, IPVA), a "categoria_principal" deve ser null.
 - A subcategoria sempre tem prioridade sobre a principal.
-- Se o usuário mencionar apenas uma categoria principal (ex: EDUCAÇÃO), a subcategoria não deve ser preenchida e a resposta deve ser "tipo": "irrelevante".
+- A subcategoria só deve ser preenchido com subcategorias.
+- A categoria principal sempre deve ser preenchida com categorias principais.
+- Se o usuário mencionar apenas uma categoria principal (ex: EDUCAÇÃO), a subcategoria deve ser null .
 - Se o usuário fizer um agradecimento, retorne "tipo": "agradecimento".
 """
 
@@ -207,6 +209,7 @@ def interpretar_mensagem(mensagem_usuario):
             "4. Se a mensagem não estiver relacionada a finanças, retorne:\n"
             '{ "tipo": "irrelevante" }\n\n'
             "📌 **Regras importantes:**\n"
+            "- Todos os campos devem ser passados, por mais que uns tenha  valores nulos\n"
             "- Deve sempre passar uma descrição para a transação de registro\n"
             "- Sempre use datas no formato ISO: yyyy-mm-dd\n"
             "- Sempre use o nome exato da subcategoria com acentuação e capitalização corretas (ex: \"IPVA\", \"Plano de saúde\")\n"
@@ -217,7 +220,7 @@ def interpretar_mensagem(mensagem_usuario):
             "- Sempre inclua o campo \"tipo_lancamento\" quando for possível inferir\n\n"
             "✅ Se o usuário mencionar uma *subcategoria específica* (ex: Ifood, IPVA):\n"
             "- Preencha \"categoria\" com a subcategoria mencionada\n"
-            "- Defina \"categoria_principal\" como null\n"
+            "- Defina \"categoria_principal\" como null, obrigatoriamente\n"
             "- A subcategoria sempre tem prioridade sobre qualquer categoria principal\n\n"
             "❌ Se o usuário mencionar apenas uma *categoria principal* (ex: EDUCAÇÃO, TRANSPORTE):\n"
             "- Defina \"categoria_principal\" com o nome da categoria principal corretamente capitalizado\n"
@@ -234,7 +237,7 @@ def interpretar_mensagem(mensagem_usuario):
     )
 
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         temperature=0,
         messages=[
             {"role": "system", "content": prompt_sistema},
@@ -242,7 +245,27 @@ def interpretar_mensagem(mensagem_usuario):
         ]
     )
 
-    return response['choices'][0]['message']['content']
+    content = response['choices'][0]['message']['content']
+
+    cleaned = content.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.strip("`")
+        if cleaned.lower().startswith("json"):
+            cleaned = cleaned[4:].strip()
+    try:
+        resultado = json.loads(cleaned)
+
+        if resultado.get("categoria") and resultado.get("categoria_principal"):
+            resultado["categoria_principal"] = None
+
+        elif resultado.get("categoria_principal") and not resultado.get("categoria"):
+            resultado["categoria"] = None
+
+        return json.dumps(resultado)
+
+    except Exception as e:
+        print("Erro ao interpretar JSON:", content)
+        raise e
 
 
 def formatar_resposta_registro(transacao):
