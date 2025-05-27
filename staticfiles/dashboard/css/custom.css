@@ -112,7 +112,8 @@ div {
 .card {
   margin-bottom: 20px;
   border: none;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  box-shadow: 0 0.125rem 1rem rgba(0, 0, 0, 0.075);
+  border-radius: 20px;
 }
 
 .card-header {

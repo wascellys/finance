@@ -7,30 +7,36 @@
   <div class="row">
     <!-- Saldo -->
     <div class="col-lg-4 col-md-6 mb-4">
-      <div class="card h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title">SALDO</h5>
-          <h2 class="display-4 text-saldo">R$ {{ saldo|floatformat:2 }}</h2>
+      <div class="card stats-small stats-small--1 h-100">
+        <div class="card-body-resume">
+          <div class="d-flex flex-column align-items-center">
+            <div class="stats-small__label text-uppercase">Saldo</div>
+            <div class="stats-small__value count">R$ {{ saldo|floatformat:2 }}</div>
+          </div>
         </div>
       </div>
     </div>
     
     <!-- Receitas -->
     <div class="col-lg-4 col-md-6 mb-4">
-      <div class="card h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title">RECEITAS</h5>
-          <h2 class="display-4 text-receita">R$ {{ receitas|floatformat:2 }}</h2>
+      <div class="card stats-small stats-small--2 h-100">
+        <div class="card-body-resume">
+          <div class="d-flex flex-column align-items-center">
+            <div class="stats-small__label text-uppercase">Entradas</div>
+            <div class="stats-small__value count">R$ {{ receitas|floatformat:2 }}</div>
+          </div>
         </div>
       </div>
     </div>
     
     <!-- Despesas -->
     <div class="col-lg-4 col-md-6 mb-4">
-      <div class="card h-100">
-        <div class="card-body text-center">
-          <h5 class="card-title">DESPESAS</h5>
-          <h2 class="display-4 text-despesa">R$ {{ despesas|floatformat:2 }}</h2>
+      <div class="card stats-small stats-small--3 h-100">
+        <div class="card-body-resume">
+          <div class="d-flex flex-column align-items-center">
+            <div class="stats-small__label text-uppercase">Saídas</div>
+            <div class="stats-small__value count">R$ {{ despesas|floatformat:2 }}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -41,8 +47,8 @@
     <div class="col-lg-8 mb-4">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Fluxo de Caixa</h5>
-          <div class="btn-group btn-group-sm" role="group">
+          <h5 class="mb-0">Caixa</h5>
+          <div class="btn-group btn-group-sm page-header-tabs" role="group">
             <button type="button" class="btn btn-outline-primary active" data-period="30">30 dias</button>
             <button type="button" class="btn btn-outline-primary" data-period="60">60 dias</button>
             <button type="button" class="btn btn-outline-primary" data-period="90">90 dias</button>
@@ -68,7 +74,7 @@
           </div>
         </div>
         <div class="card-footer text-center">
-          <a href="{% url 'categories_analysis' %}" class="btn btn-sm btn-outline-primary">Ver análise detalhada →</a>
+          <a href="{% url 'categories_analysis' %}" class="btn btn-sm btn-link text-primary">Ver análise detalhada <i class="fas fa-arrow-right fa-xs"></i></a>
         </div>
       </div>
     </div>
@@ -78,11 +84,11 @@
   <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Últimas Transações</h5>
-      <a href="{% url 'transactions_list' %}" class="btn btn-sm btn-outline-primary">Ver todas →</a>
+      <a href="{% url 'transactions_list' %}" class="btn btn-sm btn-link text-primary">Ver todas <i class="fas fa-arrow-right fa-xs"></i></a>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover table-modern mb-0">
           <thead>
             <tr>
               <th>Data</th>
@@ -126,12 +132,18 @@
     // Dados para os gráficos
     const chartData = {{ chart_data|safe }};
     
-    // Cores para os gráficos
+    // Cores para os gráficos (alinhadas com CSS)
     const chartColors = {
-      receitas: 'rgba(40, 167, 69, 0.7)',
-      despesas: 'rgba(220, 53, 69, 0.7)',
-      saldo: 'rgba(0, 123, 255, 0.7)'
+      receitas: '#2ECC71', // Verde esmeralda
+      despesas: '#E67E22', // Laranja suave
+      saldo: '#0B3D91'    // Azul profundo
     };
+    
+    // Cores para gráfico de Pizza/Donut (gerar paleta mais harmoniosa)
+    const donutColors = [
+      '#17A2B8', '#6610F2', '#FD7E14', '#20C997', '#FFC107', '#DC3545', '#6F42C1', '#E83E8C'
+      // Adicionar mais cores se necessário, ou usar uma biblioteca para gerar paletas
+    ];
     
     // Configuração do gráfico de fluxo de caixa
     let fluxoCaixaCtx = document.getElementById('fluxoCaixaChart').getContext('2d');
@@ -160,7 +172,9 @@
                   borderColor: chartColors.receitas,
                   borderWidth: 2,
                   fill: false,
-                  tension: 0.1
+                  tension: 0.3,
+                  pointRadius: 3,
+                  pointHoverRadius: 5
                 },
                 {
                   label: 'Despesas',
@@ -169,7 +183,9 @@
                   borderColor: chartColors.despesas,
                   borderWidth: 2,
                   fill: false,
-                  tension: 0.1
+                  tension: 0.3,
+                  pointRadius: 3,
+                  pointHoverRadius: 5
                 },
                 {
                   label: 'Saldo',
@@ -178,7 +194,9 @@
                   borderColor: chartColors.saldo,
                   borderWidth: 2,
                   fill: false,
-                  tension: 0.1
+                  tension: 0.3,
+                  pointRadius: 3,
+                  pointHoverRadius: 5
                 }
               ]
             },
@@ -188,8 +206,32 @@
               plugins: {
                 legend: {
                   position: 'top',
+                  labels: {
+                    padding: 20,
+                    usePointStyle: true,
+                    font: {
+                      family: "'Poppins', sans-serif",
+                      size: 12
+                    }
+                  }
                 },
                 tooltip: {
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  titleColor: '#343A40',
+                  bodyColor: '#343A40',
+                  borderColor: '#E9ECEF',
+                  borderWidth: 1,
+                  padding: 12,
+                  cornerRadius: 8,
+                  titleFont: {
+                    family: "'Poppins', sans-serif",
+                    size: 14,
+                    weight: 'bold'
+                  },
+                  bodyFont: {
+                    family: "'Poppins', sans-serif",
+                    size: 13
+                  },
                   callbacks: {
                     label: function(context) {
                       return context.dataset.label + ': R$ ' + context.raw.toFixed(2);
@@ -200,12 +242,37 @@
               scales: {
                 y: {
                   beginAtZero: true,
+                  grid: {
+                    color: 'rgba(0, 0, 0, 0.05)',
+                    drawBorder: false
+                  },
                   ticks: {
+                    font: {
+                      family: "'Poppins', sans-serif",
+                      size: 11
+                    },
+                    padding: 10,
                     callback: function(value) {
                       return 'R$ ' + value.toFixed(2);
                     }
                   }
+                },
+                x: {
+                  grid: {
+                    display: false
+                  },
+                  ticks: {
+                    font: {
+                      family: "'Poppins', sans-serif",
+                      size: 11
+                    },
+                    padding: 10
+                  }
                 }
+              },
+              animation: {
+                duration: 1000,
+                easing: 'easeOutQuart'
               }
             }
           });
@@ -246,7 +313,7 @@
           labels: categorias,
           datasets: [{
             data: valores,
-            backgroundColor: backgroundColors,
+            backgroundColor: donutColors.slice(0, categorias.length), // Usar a paleta definida
             borderWidth: 1
           }]
         },
