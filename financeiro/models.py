@@ -54,3 +54,36 @@ class Transaction(models.Model):
                 new_code = self.generate_code()
             self.code = new_code
         super().save(*args, **kwargs)
+
+
+from django.db import models
+from django.utils import timezone
+from datetime import timedelta
+
+from .models import User  # ou ajuste o import conforme sua estrutura
+
+
+class ConversationContext(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="contexto")
+    last_message = models.TextField(blank=True, null=True)
+    last_intent = models.CharField(max_length=50, blank=True, null=True)  # Ex: "consulta" ou "registro"
+    last_category = models.CharField(max_length=100, blank=True, null=True)
+    last_date_range_start = models.DateField(blank=True, null=True)
+    last_date_range_end = models.DateField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Contexto de {self.user.phone_number}"
+
+    def contexto_expirado(self, minutos=30):
+        """Verifica se o contexto está obsoleto (default: 30 min)"""
+        return timezone.now() - self.updated_at > timedelta(minutes=minutos)
+
+    def limpar(self):
+        """Zera o contexto"""
+        self.last_message = None
+        self.last_intent = None
+        self.last_category = None
+        self.last_date_range_start = None
+        self.last_date_range_end = None
+        self.save()
