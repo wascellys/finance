@@ -29,6 +29,9 @@ class InterpretarTransacaoView(APIView):
         phone_number = data.get("contact_phone_number", "").strip()
         nome_contato = data.get("contact_name", "").strip()
 
+
+
+
         if len(base64_str) < 5:
             return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=200)
 
@@ -48,6 +51,8 @@ class InterpretarTransacaoView(APIView):
                 return Response({"error": "Mensagem válida não recebida."}, status=200)
 
             interpretado = interpretar_mensagem(description)
+
+            print("INTERPRETADO:", interpretado)
 
             if isinstance(interpretado, str):
                 resposta = self._resposta_simples(phone_number, nome_contato, interpretado)
@@ -151,6 +156,9 @@ class InterpretarTransacaoView(APIView):
 
             else:
                 mensagem = "❌ Tipo de ação não reconhecido."
+
+
+
 
             self._enviar_resposta(phone_number, nome_contato, mensagem)
             return Response({"message": mensagem}, status=200)
