@@ -3,7 +3,7 @@ import os
 from django.utils import timezone
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import plotly.io as pio
 import io
 import base64
@@ -11,7 +11,6 @@ import pytz
 from decouple import config
 import openai
 import plotly.graph_objects as go
-from datetime import timedelta
 
 from dashboard.models import TemporaryLink
 
@@ -19,24 +18,19 @@ openai.api_key = config('APIKEY')
 
 
 def limpar_base64(data: str):
-    # Remove espaços, quebras de linha e caracteres inválidos
     clean_str = data.replace(' ', '+').replace('\n', '')
-
     return clean_str
 
 
 def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
-    os.makedirs("tmp", exist_ok=True)  # garante a pasta tmp
+    os.makedirs("tmp", exist_ok=True)
     caminho = f"tmp/{uuid.uuid4()}{extensao}"
-
     base64_str = limpar_base64(base64_str)
-
     try:
         with open(caminho, "wb") as f:
             f.write(base64.b64decode(base64_str))
     except base64.binascii.Error:
         raise ValueError("Base64 inválido")
-
     return caminho
 
 
@@ -53,7 +47,7 @@ Categoria principal: CONTAS RESIDENCIAIS
 - Energia, Água, Telefone, Internet, Gás, TV por assinatura
 
 Categoria principal: SUPERMERCADO
-- Mercearia, Açougue, Hortifruti, Frios e laticínios, Padaria, Bebidas, Produtos de limpeza, Produtos de higiene, Alimentos industrializados, Congelados, Petiscos e snacks, Produtos infantis, Utensílios domésticos, Produtos para pets, Produtos de papelaria
+- Mercearia, Açougue, Hortifruti, Frios e laticínios, Padaria, Bebidas, Produtos de limpeza, Produtos de higiene, Alimentos industrializados, Congelados, Petiscos e snacks, Produtos infantis, Utensílios domésticos, Produtos para pets, Produtos de papelaria, Compras no supermercado 
 
 Categoria principal: ALIMENTAÇÃO
 - Refeições e lanches, Ifood, Restaurante, Cafeteria, Alimentos
@@ -119,16 +113,6 @@ Categoria principal: VENDAS EVENTUAIS
 
 Categoria principal: OUTROS
 - Cashback, Prêmios, Presentes, Herança, Restituição de imposto
-
-📌 Regras importantes:
-- Sempre preencha o campo "categoria" com a subcategoria mencionada pelo usuário.
-- Preencha o campo "categoria_principal" apenas se o usuário mencionar diretamente uma categoria principal, sem indicar uma subcategoria específica.
-- Se o usuário mencionar uma subcategoria (ex: Ifood, IPVA), a "categoria_principal" deve ser null.
-- A subcategoria sempre tem prioridade sobre a principal.
-- A subcategoria só deve ser preenchido com subcategorias.
-- A categoria principal sempre deve ser preenchida com categorias principais.
-- Se o usuário mencionar apenas uma categoria principal (ex: EDUCAÇÃO), a subcategoria deve ser null .
-- Se o usuário fizer um agradecimento, retorne "tipo": "agradecimento".
 """
 
 
@@ -144,7 +128,7 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": categorias_financeiras_prompt},
+                    {"role": "system", "content": categorias_financeiras_prompt()},
                     {
                         "role": "user",
                         "content": [
@@ -166,106 +150,94 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
     return None
 
 
-agradecimentos = ["obrigado", "obrigada", "valeu", "agradeço", "muito obrigado", "grato", "grata"]
-
-
 def interpretar_mensagem(mensagem_usuario):
     fuso_brasilia = pytz.timezone('America/Sao_Paulo')
     data_hoje = datetime.now(fuso_brasilia).date().isoformat()
 
-    if any(palavra in mensagem_usuario.lower() for palavra in agradecimentos):
-        data = {
-            "tipo": "agradecimento",
-            "mensagem": "De nada! Estou sempre aqui para ajudar. 😊"
-        }
+    prompt_sistema = f"""
+Hoje é {data_hoje}.
+Você é um assistente financeiro amigável que conversa com o usuário sobre suas finanças.
 
-        return json.dumps(data)
+📌 Regras obrigatórias:
+- Sempre que possível, retorne um JSON estruturado de forma correta.
+- Se o usuário não mencionar uma data explícita para o registro, assuma que a transação é para hoje.
+- A data deve sempre estar no formato ISO: yyyy-mm-dd.
+- A descrição deve ser preenchida com base na mensagem, mesmo que resumida.
+- A categoria deve usar exatamente a subcategoria informada no catálogo, com acentuação e capitalização correta.
+- Se o usuário mencionar uma categoria principal sem uma subcategoria específica, preencha \"categoria_principal\" e deixe \"categoria\" como null.
+- Se o usuário mencionar uma subcategoria (ex: Ifood, IPVA), a \"categoria_principal\" deve ser null.
+- Nunca peça ao usuário mais informações. Faça o melhor possível com o que foi fornecido.
+- Para mensagens genéricas ou cumprimentos, responda com uma mensagem textual simpática — não JSON.
 
-    prompt_sistema = (
-            f"Hoje é {data_hoje}. "
-            "Você é um assistente financeiro que interpreta mensagens de usuários sobre *registro* ou *consulta* de transações financeiras. "
-            "Sua resposta deve ser sempre e somente um JSON estruturado, com as seguintes possibilidades:\n\n"
-            "1. Para *registro* de uma transação:\n"
-            "{\n"
-            '  "tipo": "registro",\n'
-            '  "valor": 1200,\n'
-            '  "categoria": "IPVA",\n'
-            '  "descricao": "Paguei o IPVA",\n'
-            '  "data": "2025-04-04",\n'
-            '  "tipo_lancamento": "despesa"\n'
-            "}\n\n"
-            "2. Para *consulta* de transações:\n"
-            "{\n"
-            '  "tipo": "consulta",\n'
-            '  "data_inicial": "2025-04-01",\n'
-            '  "data_final": "2025-04-30",\n'
-            '  "categoria": "Plano de saúde",\n'
-            '  "categoria_principal": null,\n'
-            '  "tipo_lancamento": "despesa",\n'
-            '  "grafico": false\n'
-            "}\n\n"
-            "3. Se a mensagem for um agradecimento (ex: obrigado, valeu), retorne:\n"
-            '{ "tipo": "agradecimento", "mensagem": "De nada! Estou sempre aqui para ajudar. 😊" }\n\n'
-            "4. Se a mensagem não estiver relacionada a finanças, retorne:\n"
-            '{ "tipo": "irrelevante" }\n\n'
-            "📌 **Regras importantes:**\n"
-            "- Todos os campos devem ser passados, por mais que uns tenha  valores nulos\n"
-            "- Deve sempre passar uma descrição para a transação de registro\n"
-            "- Sempre use datas no formato ISO: yyyy-mm-dd\n"
-            "- Sempre use o nome exato da subcategoria com acentuação e capitalização corretas (ex: \"IPVA\", \"Plano de saúde\")\n"
-            "- Retorne \"categoria\": \"Sem categoria\" apenas se o usuário mencionar isso literalmente\n"
-            "- Se não houver categoria mencionada na consulta, omita esse campo ou use null\n"
-            "- Se não houver período mencionado na consulta, considerar o período do primeiro dia do ano até hoje\n"
-            "- Só deve ser gerado gráfico caso o usuário mencione que quer gráfico\n"
-            "- Sempre inclua o campo \"tipo_lancamento\" quando for possível inferir\n\n"
-            "✅ Se o usuário mencionar uma *subcategoria específica* (ex: Ifood, IPVA):\n"
-            "- Preencha \"categoria\" com a subcategoria mencionada\n"
-            "- Defina \"categoria_principal\" como null, obrigatoriamente\n"
-            "- A subcategoria sempre tem prioridade sobre qualquer categoria principal\n\n"
-            "❌ Se o usuário mencionar apenas uma *categoria principal* (ex: EDUCAÇÃO, TRANSPORTE):\n"
-            "- Defina \"categoria_principal\" com o nome da categoria principal corretamente capitalizado\n"
-            "- Não preencha o campo \"categoria\"\n"
-            "- Se não for possível identificar uma subcategoria, mas for claramente uma categoria principal, continue com \"categoria_principal\"\n"
-            "- Caso a mensagem for vaga e contiver apenas uma categoria ampla, considere retornar \"tipo\": \"irrelevante\"\n\n"
-            "📚 *Palavras associadas a despesas* (inferir tipo_lancamento = 'despesa'):\n"
-            "- gastei, paguei, comprei, adquiri, investi, doei, transferi, saquei, apliquei, pagaram, quitar, desembolsei\n\n"
-            "📚 *Palavras associadas a receitas* (inferir tipo_lancamento = 'receita'):\n"
-            "- recebi, ganhei, entrou, caiu na conta, depósito, pagaram para mim, crédito, bônus, prêmio, herança, ou sinônimos\n\n"
-            "📚 *Palavras associadas a consulta*:\n"
-            "- quero ver, me mostre, consultar, quanto gastei, quanto recebi, listar, exibir, mostrar, extrato, relatório, saldo, meu saldo ou sinônimos\n\n"
-            + categorias_financeiras_prompt()
-    )
+
+
+
+Sempre use as subcategorias exatas do catálogo abaixo.
+{categorias_financeiras_prompt()}
+
+Você pode responder com mensagens livres para cumprimentos e dúvidas.
+
+Quando o usuário quiser registrar, consultar, atualizar ou remover uma transação, responda obrigatoriamente com um JSON estruturado.
+
+Exemplos:
+
+Registro:
+{{
+  "tipo": "registro",
+  "valor": 80.5,
+  "categoria": "IPVA",
+  "descricao": "Paguei o IPVA",
+  "data": "2025-04-04",
+  "tipo_lancamento": "despesa"
+}}
+
+Consulta:
+{{
+  "tipo": "consulta",
+  "data_inicial": "2025-04-01",
+  "data_final": "2025-04-30",
+  "categoria": "Plano de saúde",
+  "categoria_principal": null,
+  "tipo_lancamento": "despesa",
+  "grafico": false
+}}
+
+Atualizar:
+{{
+  "tipo": "atualizar",
+  "campo": "categoria",
+  "valor": "Supermercado",
+  "codigo": "ABC123"  # opcional
+}}
+
+Remover:
+{{
+  "tipo": "remover",
+  "codigo": "ABC123"  # opcional
+}}
+
+Se a mensagem for apenas uma saudação ou dúvida, responda com uma mensagem textual simpática.
+"""
 
     response = openai.ChatCompletion.create(
         model="gpt-4o",
-        temperature=0,
+        temperature=0.3,
         messages=[
             {"role": "system", "content": prompt_sistema},
             {"role": "user", "content": mensagem_usuario}
         ]
     )
 
-    content = response['choices'][0]['message']['content']
+    content = response['choices'][0]['message']['content'].strip()
+    if content.startswith("```"):
+        content = content.strip("`")
+        if content.lower().startswith("json"):
+            content = content[4:].strip()
 
-    cleaned = content.strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.strip("`")
-        if cleaned.lower().startswith("json"):
-            cleaned = cleaned[4:].strip()
     try:
-        resultado = json.loads(cleaned)
-
-        if resultado.get("categoria") and resultado.get("categoria_principal"):
-            resultado["categoria_principal"] = None
-
-        elif resultado.get("categoria_principal") and not resultado.get("categoria"):
-            resultado["categoria"] = None
-
-        return json.dumps(resultado)
-
-    except Exception as e:
-        print("Erro ao interpretar JSON:", content)
-        raise e
+        return json.loads(content)
+    except Exception:
+        return content
 
 
 def formatar_resposta_registro(transacao):
@@ -322,7 +294,6 @@ def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=N
         tipo_str = "⬆️ Receita" if t.tipo == "receita" else "⬇️ Despesa"
         linhas.append(f"{i}. *{valor}* - `{desc}` _({data})_ {tipo_str}\n")
 
-    # Geração de link temporário
     token_obj, created = TemporaryLink.objects.get_or_create(
         user=transacoes[0].user,
         defaults={
@@ -343,45 +314,3 @@ def formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria=N
     )
 
     return header + "\n" + "".join(linhas) + "\n" + link
-
-
-def gerar_grafico_base64(transacoes):
-    categorias = {}
-    for t in transacoes:
-        cat = t.category.name
-        categorias[cat] = categorias.get(cat, 0) + float(t.amount)
-
-    if not categorias:
-        return None
-
-    labels = list(categorias.keys())
-    valores = list(categorias.values())
-
-    fig = go.Figure(
-        data=[
-            go.Bar(
-                x=labels,
-                y=valores,
-                marker=dict(color='indigo'),
-                text=[f"R$ {v:.2f}".replace('.', ',') for v in valores],
-                textposition='auto'
-            )
-        ]
-    )
-
-    fig.update_layout(
-        title='Gastos por Categoria',
-        xaxis_title='Categoria',
-        yaxis_title='Valor (R$)',
-        template='plotly_dark',
-        height=500,
-        margin=dict(l=30, r=30, t=50, b=50),
-    )
-
-    # Salvar como imagem base64
-    buffer = io.BytesIO()
-    pio.write_image(fig, buffer, format='png')  # Requer instalação do kaleido
-    buffer.seek(0)
-    imagem_base64 = base64.b64encode(buffer.read()).decode('utf-8')
-
-    return imagem_base64

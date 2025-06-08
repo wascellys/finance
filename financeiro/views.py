@@ -1,6 +1,5 @@
-from .utils import interpretar_mensagem, formatar_resposta_registro, formatar_resposta_consulta, gerar_grafico_base64, \
+from .utils import interpretar_mensagem, formatar_resposta_registro, formatar_resposta_consulta, \
     salvar_arquivo_temporario, transcrever_audio, interpretar_imagem_gpt4_vision
-import json
 from datetime import datetime
 from django.utils.timezone import make_aware, now
 from rest_framework.views import APIView
@@ -30,17 +29,13 @@ class InterpretarTransacaoView(APIView):
         phone_number = data.get("contact_phone_number", "").strip()
         nome_contato = data.get("contact_name", "").strip()
 
-        print(base64_str)
-
         if len(base64_str) < 5:
-            return Response({"error": "Nenhuma mensagem válida foi recebida. Quantidade de caracteres insuficiente."},
-                            status=200)
+            return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=200)
 
         try:
             if not phone_number:
                 return Response({"error": "Campo 'phone_number' obrigatório."}, status=200)
 
-            # Processamento baseado no tipo de mensagem
             if message_type == "audio" and base64_str:
                 caminho = salvar_arquivo_temporario(base64_str, extensao)
                 description = transcrever_audio(caminho)
@@ -50,99 +45,64 @@ class InterpretarTransacaoView(APIView):
                 description = base64_str.strip()
 
             if not description:
-                return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=200)
+                return Response({"error": "Mensagem válida não recebida."}, status=200)
 
-            interpretado_raw = interpretar_mensagem(description)
-            interpretado = json.loads(interpretado_raw)
+            interpretado = interpretar_mensagem(description)
 
-            print("INTERPRETADO:", interpretado)
+            if isinstance(interpretado, str):
+                resposta = self._resposta_simples(phone_number, nome_contato, interpretado)
+                return Response({"message": interpretado}, status=200)
 
-            if interpretado["tipo"] == "irrelevante":
-                resposta = {
-                    "apiKey": config("APIKEY_WG"),
-                    "phone_number": config("BOT_NUMBER"),
-                    "contact_phone_number": phone_number,
-                    "contact_name": nome_contato or phone_number,
-                    "chat_type": "user",
-                    "message_type": "text",
-                    "message_body": (
-                        "Não conseguimos processar sua mensagem 🥺.\n"
-                        "Para registrar um gasto, utilize palavras como *gastei*, *paguei*, *compra*, seguido do valor e categoria.\n"
-                        "Para consultar despesas ou receitas, use expressões como *quanto gastei em alimentação* ou *consultar minhas receitas*.\n\n"
-                        "Exemplos: 'Gastei 50 reais em supermercado' ou 'Consultar despesas de transporte em abril'.\n\n"
-                        "Tente novamente! 😊"
-                    ),
-                }
-                requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
+            tipo = interpretado.get("tipo")
+
+            if tipo == "irrelevante":
+                mensagem = (
+                    "Não conseguimos processar sua mensagem 🥺.\n"
+                    "Tente usar frases como:\n"
+                    "*Gastei 50 reais em mercado* ou *Consultar despesas de abril*."
+                )
+                self._enviar_resposta(phone_number, nome_contato, mensagem)
                 return Response({"error": "Mensagem irrelevante."}, status=200)
 
-            if interpretado["tipo"] == "agradecimento":
-                resposta = {
-                    "apiKey": config("APIKEY_WG"),
-                    "phone_number": config("BOT_NUMBER"),
-                    "contact_phone_number": phone_number,
-                    "contact_name": nome_contato or phone_number,
-                    "chat_type": "user",
-                    "message_type": "text",
-                    "message_body": interpretado["mensagem"],
-                }
-                requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
-                return Response({"message": interpretado["mensagem"]}, status=200)
+            if tipo == "agradecimento":
+                self._enviar_resposta(phone_number, nome_contato, interpretado.get("mensagem"))
+                return Response({"message": interpretado.get("mensagem")}, status=200)
 
-            user, created = User.objects.get_or_create(phone_number=phone_number)
-            if created and nome_contato:
+            user, _ = User.objects.get_or_create(phone_number=phone_number)
+            if nome_contato:
                 user.name = nome_contato
                 user.save()
 
-            if interpretado["tipo"] == "registro":
-                categoria_nome_normalizada = normalizar(interpretado["categoria"])
-                categoria = None
-
-                for cat in Category.objects.all():
-                    if normalizar(cat.name) == categoria_nome_normalizada:
-                        categoria = cat
-                        break
-
+            if tipo == "registro":
+                categoria = self._obter_categoria(interpretado.get("categoria"))
                 if not categoria:
-                    print("CATEGORIA não encontrada:", interpretado["categoria"])
                     categoria = Category.objects.get(name__icontains="Sem categoria")
-
-                tipo_lancamento = interpretado.get("tipo_lancamento", "despesa")
-                data_transacao = interpretado.get("data")
-                date = make_aware(datetime.strptime(data_transacao, "%Y-%m-%d")) if data_transacao else None
 
                 transacao = Transaction.objects.create(
                     user=user,
                     category=categoria,
                     amount=interpretado["valor"],
                     description=interpretado["descricao"],
-                    tipo=tipo_lancamento,
+                    tipo=interpretado.get("tipo_lancamento", "despesa"),
                     created_at=now(),
-                    date=date
+                    date=make_aware(datetime.strptime(interpretado["data"], "%Y-%m-%d"))
                 )
-
                 mensagem = formatar_resposta_registro(transacao)
 
-            elif interpretado["tipo"] == "consulta":
+            elif tipo == "consulta":
                 data_inicial = datetime.strptime(interpretado["data_inicial"], "%Y-%m-%d")
                 data_final = datetime.strptime(interpretado["data_final"], "%Y-%m-%d")
+                transacoes = Transaction.objects.filter(user=user, date__date__range=(data_inicial, data_final))
 
-                transacoes = Transaction.objects.filter(
-                    user=user,
-                    date__date__gte=data_inicial,
-                    date__date__lte=data_final
-                )
-
-                categoria_principal = interpretado.get("categoria_principal")
                 categoria_nome = interpretado.get("categoria")
+                categoria_principal = interpretado.get("categoria_principal")
 
                 if categoria_principal:
-                    main_category = MainCategory.objects.filter(name__icontains=categoria_principal).first()
-                    if main_category:
-                        transacoes = transacoes.filter(category__main_category=main_category)
+                    main_cat = MainCategory.objects.filter(name__icontains=categoria_principal).first()
+                    if main_cat:
+                        transacoes = transacoes.filter(category__main_category=main_cat)
                 elif categoria_nome:
-                    categoria_nome_normalizada = normalizar(categoria_nome)
-                    if categoria_nome_normalizada not in ["todas", "tudo", "geral"]:
+                    if normalizar(categoria_nome) not in ["todas", "tudo", "geral"]:
                         categoria = Category.objects.filter(name__icontains=categoria_nome).first()
                         if categoria:
                             transacoes = transacoes.filter(category=categoria)
@@ -151,54 +111,89 @@ class InterpretarTransacaoView(APIView):
                 if tipo_lancamento:
                     transacoes = transacoes.filter(tipo=tipo_lancamento)
 
+                mensagem = formatar_resposta_consulta(transacoes, data_inicial, data_final,
+                                                      categoria_nome or categoria_principal, tipo_lancamento)
 
-                categoria_para_mensagem = categoria_principal if categoria_principal else categoria_nome
 
-                mensagem = formatar_resposta_consulta(transacoes, data_inicial, data_final, categoria_para_mensagem,
-                                                      tipo_lancamento)
+            elif tipo == "remover":
+                codigo = interpretado.get("codigo")
+                filtro = {"user": user}
+                if codigo:
+                    filtro["code__iexact"] = codigo
+                transacao = Transaction.objects.filter(**filtro).order_by("-created_at").first()
+                if transacao:
+                    transacao.delete()
+                    mensagem = "🗑️ Transação removida com sucesso."
+                else:
+                    mensagem = "❌ Nenhuma transação encontrada para remover."
 
-                if interpretado.get("grafico", False):
-                    imagem_base64 = gerar_grafico_base64(transacoes)
-                    if imagem_base64:
-                        resposta_grafico = {
-                            "apiKey": config("APIKEY_WG"),
-                            "phone_number": config("BOT_NUMBER"),
-                            "contact_phone_number": phone_number,
-                            "contact_name": nome_contato or phone_number,
-                            "chat_type": "user",
-                            "message_type": "image",
-                            "message_body": imagem_base64,
-                            "message_body_filename": "file.png",
-                            "message_body_mimetype": "image/png",
-                        }
-                        requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta_grafico, headers=HEADERS)
-                        return Response(data={"message": "Gráfico gerado com sucesso!"}, status=200)
+            elif tipo == "atualizar":
+                campo = interpretado.get("campo")
+                valor = interpretado.get("valor")
+                codigo = interpretado.get("codigo")
+                transacao = Transaction.objects.filter(user=user)
+                if codigo:
+                    transacao = transacao.filter(code__iexact=codigo)
+                transacao = transacao.order_by("-created_at").first()
+
+                if not transacao:
+                    mensagem = "❌ Nenhuma transação encontrada para atualizar."
+                elif campo == "categoria":
+                    nova_categoria = Category.objects.filter(name__iexact=valor).first()
+                    if nova_categoria:
+                        transacao.category = nova_categoria
+                        transacao.save()
+                        mensagem = f"✅ Categoria atualizada para *{valor}*."
+                    else:
+                        mensagem = f"❌ Categoria '{valor}' não encontrada."
+                else:
+                    mensagem = "❌ Campo de atualização não suportado."
 
             else:
-                return Response({"error": "Tipo de ação não reconhecido."}, status=200)
+                mensagem = "❌ Tipo de ação não reconhecido."
 
-            resposta = {
-                "apiKey": config("APIKEY_WG"),
-                "phone_number": config("BOT_NUMBER"),
-                "contact_phone_number": phone_number,
-                "contact_name": nome_contato or phone_number,
-                "chat_type": "user",
-                "message_type": "text",
-                "message_body": mensagem,
-            }
-
-            requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
-            return Response(data=mensagem, status=200)
+            self._enviar_resposta(phone_number, nome_contato, mensagem)
+            return Response({"message": mensagem}, status=200)
 
         except Exception as e:
-            resposta = {
-                "apiKey": config("APIKEY_WG"),
-                "phone_number": config("BOT_NUMBER"),
-                "contact_phone_number": phone_number,
-                "contact_name": nome_contato or phone_number,
-                "chat_type": "user",
-                "message_type": "text",
-                "message_body": "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente.",
-            }
-            requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
-            return Response({"error": f"Erro ao interpretar ou processar mensagem: {str(e)}"}, status=500)
+            erro = "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente."
+            self._enviar_resposta(phone_number, nome_contato, erro)
+            return Response({"error": str(e)}, status=500)
+
+    def _resposta_simples(self, phone, nome, body):
+        resposta = {
+            "apiKey": config("APIKEY_WG"),
+            "phone_number": config("BOT_NUMBER"),
+            "contact_phone_number": phone,
+            "contact_name": nome or phone,
+            "chat_type": "user",
+            "message_type": "text",
+            "message_body": body,
+        }
+        requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
+        return resposta
+
+    def _enviar_resposta(self, phone, nome, mensagem):
+        return self._resposta_simples(phone, nome, mensagem)
+
+    def _resposta_imagem(self, phone, nome, imagem):
+        return {
+            "apiKey": config("APIKEY_WG"),
+            "phone_number": config("BOT_NUMBER"),
+            "contact_phone_number": phone,
+            "contact_name": nome or phone,
+            "chat_type": "user",
+            "message_type": "image",
+            "message_body": imagem,
+            "message_body_filename": "grafico.png",
+            "message_body_mimetype": "image/png",
+        }
+
+    def _obter_categoria(self, nome_categoria):
+        nome_normalizado = normalizar(nome_categoria or "")
+        for cat in Category.objects.all():
+            if normalizar(cat.name) == nome_normalizado:
+                return cat
+        return None
+
+
