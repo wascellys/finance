@@ -158,7 +158,7 @@ class InterpretarTransacaoView(APIView):
         except Exception as e:
             erro = "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente."
             self._enviar_resposta(phone_number, nome_contato, erro)
-            return Response({"error": str(e)}, status=500)
+            return Response({"error": str(e)}, status=200)
 
     def _resposta_simples(self, phone, nome, body):
         resposta = {
