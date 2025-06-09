@@ -29,6 +29,9 @@ class InterpretarTransacaoView(APIView):
         phone_number = data.get("contact_phone_number", "").strip()
         nome_contato = data.get("contact_name", "").strip()
 
+
+        print(base64_str)
+
         if len(base64_str) < 5:
             return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=200)
 
