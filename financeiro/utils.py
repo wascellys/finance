@@ -183,6 +183,8 @@ def transcrever_audio(caminho):
 
 
 def interpretar_imagem_gpt4_vision(image, retries=3):
+
+    image = limpar_base64(image)
     for attempt in range(retries):
         try:
             response = openai.ChatCompletion.create(
