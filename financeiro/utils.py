@@ -35,7 +35,67 @@ def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
 
 
 def categorias_financeiras_prompt():
-    return """
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    data_hoje = datetime.now(fuso_brasilia).date().isoformat()
+
+    return f"""
+Hoje é {data_hoje}.
+Você é um assistente financeiro amigável que conversa com o usuário sobre suas finanças.
+
+📌 Regras obrigatórias:
+- Sempre que possível, retorne um JSON estruturado de forma correta.
+- Se o usuário não mencionar uma data explícita para o registro, assuma que a transação é para hoje.
+- A data deve sempre estar no formato ISO: yyyy-mm-dd.
+- A descrição deve ser preenchida com base na mensagem, mesmo que resumida.
+- A categoria deve usar exatamente a subcategoria informada no catálogo, com acentuação e capitalização correta.
+- Se o usuário mencionar uma categoria principal sem uma subcategoria específica, preencha \"categoria_principal\" e deixe \"categoria\" como null.
+- Se o usuário mencionar uma subcategoria (ex: Ifood, IPVA), a \"categoria_principal\" deve ser null.
+- Nunca peça ao usuário mais informações. Faça o melhor possível com o que foi fornecido.
+- Para mensagens genéricas ou cumprimentos, responda com uma mensagem textual simpática — não JSON.
+
+
+Você pode responder com mensagens livres para cumprimentos e dúvidas.
+
+Quando o usuário quiser registrar, consultar, atualizar ou remover uma transação, responda obrigatoriamente com um JSON estruturado. Isso vale para mensagens de texto, audio e imagens.
+
+Exemplos:
+
+Registro:
+{{
+  "tipo": "registro",
+  "valor": 80.5,
+  "categoria": "IPVA",
+  "descricao": "Paguei o IPVA",
+  "data": "2025-04-04",
+  "tipo_lancamento": "despesa"
+}}
+
+Consulta:
+{{
+  "tipo": "consulta",
+  "data_inicial": "2025-04-01",
+  "data_final": "2025-04-30",
+  "categoria": "Plano de saúde",
+  "categoria_principal": null,
+  "tipo_lancamento": "despesa",
+  "grafico": false
+}}
+
+Atualizar:
+{{
+  "tipo": "atualizar",
+  "campo": "categoria",
+  "valor": "Supermercado",
+  "codigo": "ABC123"  # opcional
+}}
+
+Remover:
+{{
+  "tipo": "remover",
+  "codigo": "ABC123"  # opcional
+}}
+
+Se a mensagem for apenas uma saudação ou dúvida, responda com uma mensagem textual simpática.
 Use apenas as seguintes subcategorias com suas respectivas categorias principais (mantenha acentuação e capitalização corretas):
 
 Despesas:
@@ -143,7 +203,17 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
                 ],
                 max_tokens=1000
             )
-            return response["choices"][0]["message"]["content"]
+            content = response["choices"][0]["message"]["content"]
+
+            if content.startswith("```"):
+                content = content.strip("`")
+                if content.lower().startswith("json"):
+                    content = content[4:].strip()
+
+            try:
+                return json.loads(content)
+            except Exception:
+                return content
         except Exception as e:
             print(f"Tentativa {attempt + 1} falhou. Erro: {e}")
             time.sleep(2)
@@ -151,73 +221,7 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
 
 
 def interpretar_mensagem(mensagem_usuario):
-    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-    data_hoje = datetime.now(fuso_brasilia).date().isoformat()
-
-    prompt_sistema = f"""
-Hoje é {data_hoje}.
-Você é um assistente financeiro amigável que conversa com o usuário sobre suas finanças.
-
-📌 Regras obrigatórias:
-- Sempre que possível, retorne um JSON estruturado de forma correta.
-- Se o usuário não mencionar uma data explícita para o registro, assuma que a transação é para hoje.
-- A data deve sempre estar no formato ISO: yyyy-mm-dd.
-- A descrição deve ser preenchida com base na mensagem, mesmo que resumida.
-- A categoria deve usar exatamente a subcategoria informada no catálogo, com acentuação e capitalização correta.
-- Se o usuário mencionar uma categoria principal sem uma subcategoria específica, preencha \"categoria_principal\" e deixe \"categoria\" como null.
-- Se o usuário mencionar uma subcategoria (ex: Ifood, IPVA), a \"categoria_principal\" deve ser null.
-- Nunca peça ao usuário mais informações. Faça o melhor possível com o que foi fornecido.
-- Para mensagens genéricas ou cumprimentos, responda com uma mensagem textual simpática — não JSON.
-
-
-
-
-Sempre use as subcategorias exatas do catálogo abaixo.
-{categorias_financeiras_prompt()}
-
-Você pode responder com mensagens livres para cumprimentos e dúvidas.
-
-Quando o usuário quiser registrar, consultar, atualizar ou remover uma transação, responda obrigatoriamente com um JSON estruturado.
-
-Exemplos:
-
-Registro:
-{{
-  "tipo": "registro",
-  "valor": 80.5,
-  "categoria": "IPVA",
-  "descricao": "Paguei o IPVA",
-  "data": "2025-04-04",
-  "tipo_lancamento": "despesa"
-}}
-
-Consulta:
-{{
-  "tipo": "consulta",
-  "data_inicial": "2025-04-01",
-  "data_final": "2025-04-30",
-  "categoria": "Plano de saúde",
-  "categoria_principal": null,
-  "tipo_lancamento": "despesa",
-  "grafico": false
-}}
-
-Atualizar:
-{{
-  "tipo": "atualizar",
-  "campo": "categoria",
-  "valor": "Supermercado",
-  "codigo": "ABC123"  # opcional
-}}
-
-Remover:
-{{
-  "tipo": "remover",
-  "codigo": "ABC123"  # opcional
-}}
-
-Se a mensagem for apenas uma saudação ou dúvida, responda com uma mensagem textual simpática.
-"""
+    prompt_sistema = categorias_financeiras_prompt()
 
     response = openai.ChatCompletion.create(
         model="gpt-4o",

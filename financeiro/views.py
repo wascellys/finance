@@ -29,9 +29,6 @@ class InterpretarTransacaoView(APIView):
         phone_number = data.get("contact_phone_number", "").strip()
         nome_contato = data.get("contact_name", "").strip()
 
-
-
-
         if len(base64_str) < 5:
             return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=200)
 
@@ -42,15 +39,17 @@ class InterpretarTransacaoView(APIView):
             if message_type == "audio" and base64_str:
                 caminho = salvar_arquivo_temporario(base64_str, extensao)
                 description = transcrever_audio(caminho)
+                interpretado = interpretar_mensagem(description)
             elif message_type == "image" and base64_str:
                 description = interpretar_imagem_gpt4_vision(base64_str)
+                interpretado = description
+            elif message_type == "text":
+                interpretado = interpretar_mensagem(base64_str)
             else:
                 description = base64_str.strip()
 
             if not description:
                 return Response({"error": "Mensagem válida não recebida."}, status=200)
-
-            interpretado = interpretar_mensagem(description)
 
             print("INTERPRETADO:", interpretado)
 
@@ -157,9 +156,6 @@ class InterpretarTransacaoView(APIView):
             else:
                 mensagem = "❌ Tipo de ação não reconhecido."
 
-
-
-
             self._enviar_resposta(phone_number, nome_contato, mensagem)
             return Response({"message": mensagem}, status=200)
 
@@ -203,5 +199,3 @@ class InterpretarTransacaoView(APIView):
             if normalizar(cat.name) == nome_normalizado:
                 return cat
         return None
-
-
