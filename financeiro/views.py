@@ -47,9 +47,11 @@ class InterpretarTransacaoView(APIView):
                 description = interpretar_imagem_gpt4_vision(base64_str)
                 interpretado = description
             elif message_type == "text":
+                description = base64_str
                 interpretado = interpretar_mensagem(base64_str)
             else:
                 description = base64_str.strip()
+                interpretado = interpretar_mensagem(description)
 
             if not description:
                 return Response({"error": "Mensagem válida não recebida."}, status=200)

@@ -97,7 +97,8 @@ Remover:
 
 Se a mensagem for apenas uma saudação ou dúvida, responda com uma mensagem textual simpática.
 Use apenas as seguintes subcategorias com suas respectivas categorias principais (mantenha acentuação e capitalização corretas):
-
+Se o usuário não especificar data, considere que a transação seja para hoje.
+Se na consulta ele não especificar o periodo, considere o primeiro dia do ano atual ate o dia de hoje.
 Despesas:
 
 Categoria principal: HABITAÇÃO
