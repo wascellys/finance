@@ -11,7 +11,8 @@ from decouple import config
 from .models import User, Category, MainCategory, Transaction
 
 HEADERS = {
-    'Content-Type': 'application/x-www-form-urlencoded'
+    'Content-Type': 'application/json',
+    'apikey': config('APIKEY_EVO')
 }
 
 
@@ -28,7 +29,6 @@ class InterpretarTransacaoView(APIView):
         extensao = data.get("message_body_extension", ".txt").strip()
         phone_number = data.get("contact_phone_number", "").strip()
         nome_contato = data.get("contact_name", "").strip()
-
 
         print(base64_str)
 
@@ -59,7 +59,7 @@ class InterpretarTransacaoView(APIView):
             print("INTERPRETADO:", interpretado)
 
             if isinstance(interpretado, str):
-                resposta = self._resposta_simples(phone_number, nome_contato, interpretado)
+                resposta = self._resposta_simples_evo(phone_number, interpretado)
                 return Response({"message": interpretado}, status=200)
 
             tipo = interpretado.get("tipo")
@@ -70,11 +70,11 @@ class InterpretarTransacaoView(APIView):
                     "Tente usar frases como:\n"
                     "*Gastei 50 reais em mercado* ou *Consultar despesas de abril*."
                 )
-                self._enviar_resposta(phone_number, nome_contato, mensagem)
+                self._enviar_resposta(phone_number, mensagem)
                 return Response({"error": "Mensagem irrelevante."}, status=200)
 
             if tipo == "agradecimento":
-                self._enviar_resposta(phone_number, nome_contato, interpretado.get("mensagem"))
+                self._enviar_resposta(phone_number, interpretado.get("mensagem"))
                 return Response({"message": interpretado.get("mensagem")}, status=200)
 
             user, _ = User.objects.get_or_create(phone_number=phone_number)
@@ -161,17 +161,17 @@ class InterpretarTransacaoView(APIView):
             else:
                 mensagem = "❌ Tipo de ação não reconhecido."
 
-            self._enviar_resposta(phone_number, nome_contato, mensagem)
+            self._enviar_resposta(phone_number, mensagem)
             return Response({"message": mensagem}, status=200)
 
         except Exception as e:
             erro = "Não conseguimos processar sua mensagem 🥺. Por favor, tente novamente."
-            self._enviar_resposta(phone_number, nome_contato, erro)
+            self._enviar_resposta(phone_number, erro)
             return Response({"error": str(e)}, status=200)
 
     def _resposta_simples(self, phone, nome, body):
         resposta = {
-            "apiKey": config("APIKEY_WG"),
+            "apiKey": config("APIKEY_EVO"),
             "phone_number": config("BOT_NUMBER"),
             "contact_phone_number": phone,
             "contact_name": nome or phone,
@@ -179,15 +179,26 @@ class InterpretarTransacaoView(APIView):
             "message_type": "text",
             "message_body": body,
         }
-        requests.post(f"{config('URL_WHATSGW')}/Send", data=resposta, headers=HEADERS)
+        requests.post(f"{config('URL_EVO')}/Send", data=resposta, headers=HEADERS)
         return resposta
 
-    def _enviar_resposta(self, phone, nome, mensagem):
-        return self._resposta_simples(phone, nome, mensagem)
+    def _resposta_simples_evo(self, phone, body):
+        payload = {
+            "number": phone,
+            "text": body,
+            "delay": 123,
+            "linkPreview": True,
+            "mentionsEveryOne": True
+        }
+        requests.post(f"{config('URL_EVO')}/message/sendText/{config('INSTANCE_EVO')}", json=payload, headers=HEADERS)
+        return payload
+
+    def _enviar_resposta(self, phone, mensagem):
+        return self._resposta_simples_evo(phone, mensagem)
 
     def _resposta_imagem(self, phone, nome, imagem):
         return {
-            "apiKey": config("APIKEY_WG"),
+            "apiKey": config("APIKEY_EVO"),
             "phone_number": config("BOT_NUMBER"),
             "contact_phone_number": phone,
             "contact_name": nome or phone,
