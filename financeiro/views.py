@@ -23,6 +23,7 @@ def normalizar(texto):
 class InterpretarTransacaoView(APIView):
     def post(self, request):
         data = request.data
+        print("DATA:", data)
 
         payload = data.get("data", {})
         message = payload.get("message", {})
