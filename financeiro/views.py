@@ -187,10 +187,7 @@ class InterpretarTransacaoView(APIView):
     def _resposta_simples_evo(self, phone, body):
         payload = {
             "number": phone,
-            "text": body,
-            "delay": 123,
-            "linkPreview": True,
-            "mentionsEveryOne": True
+            "text": body
         }
         requests.post(f"{config('URL_EVO')}/message/sendText/{config('INSTANCE_EVO')}", json=payload, headers=HEADERS)
         return payload
