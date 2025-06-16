@@ -24,6 +24,8 @@ class InterpretarTransacaoView(APIView):
     def post(self, request):
         data = request.POST
 
+        print(data)
+
         message_type = data.get("message_type", "text").strip().lower()
         base64_str = data.get('message_body', "")
         extensao = data.get("message_body_extension", ".txt").strip()
