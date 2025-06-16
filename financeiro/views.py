@@ -22,35 +22,34 @@ def normalizar(texto):
 
 class InterpretarTransacaoView(APIView):
     def post(self, request):
-        data = request.POST
+        data = request.data
 
-        print(data)
+        payload = data.get("data", {})
+        message = payload.get("message", {})
+        message_type = payload.get("messageType", "")
+        base64_str = message.get("base64", "")
+        phone_number = payload.get("key", {}).get("remoteJid", "").replace("@s.whatsapp.net", "")
+        nome_contato = payload.get("pushName", "")
 
-        message_type = data.get("message_type", "text").strip().lower()
-        base64_str = data.get('message_body', "")
-        extensao = data.get("message_body_extension", ".txt").strip()
-        phone_number = data.get("contact_phone_number", "").strip()
-        nome_contato = data.get("contact_name", "").strip()
+        print("Mensagem recebida:", message)
 
-        print(base64_str)
-
-        if len(base64_str) < 5:
+        if not base64_str and not message.get("conversation"):
             return Response({"error": "Nenhuma mensagem válida foi recebida."}, status=200)
 
         try:
             if not phone_number:
                 return Response({"error": "Campo 'phone_number' obrigatório."}, status=200)
 
-            if message_type == "audio" and base64_str:
-                caminho = salvar_arquivo_temporario(base64_str, extensao)
+            if message_type == "audioMessage":
+                caminho = salvar_arquivo_temporario(base64_str, ".ogg")
                 description = transcrever_audio(caminho)
                 interpretado = interpretar_mensagem(description)
-            elif message_type == "image" and base64_str:
+            elif message_type == "imageMessage":
                 description = interpretar_imagem_gpt4_vision(base64_str)
                 interpretado = description
-            elif message_type == "text":
-                description = base64_str
-                interpretado = interpretar_mensagem(base64_str)
+            elif message_type == "conversation":
+                description = message.get("conversation", "")
+                interpretado = interpretar_mensagem(description)
             else:
                 description = base64_str.strip()
                 interpretado = interpretar_mensagem(description)
