@@ -134,7 +134,7 @@ class InterpretarTransacaoView(APIView):
                 transacao = Transaction.objects.filter(**filtro).order_by("-created_at").first()
                 if transacao:
                     transacao.delete()
-                    mensagem = f"🗑️ Transação de código *#{transacao.code}* removida com sucesso."
+                    mensagem = f"🗑️ Transação de código *#{transacao.code.upper()}* removida com sucesso."
                 else:
                     mensagem = "❌ Nenhuma transação encontrada para remover."
 
