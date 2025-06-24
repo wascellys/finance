@@ -17,88 +17,9 @@ from dashboard.models import TemporaryLink
 openai.api_key = config('APIKEY')
 
 
-def limpar_base64(data: str):
-    clean_str = data.replace(' ', '+').replace('\n', '')
-    return clean_str
-
-
-def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
-    os.makedirs("tmp", exist_ok=True)
-    caminho = f"tmp/{uuid.uuid4()}{extensao}"
-    base64_str = limpar_base64(base64_str)
-    try:
-        with open(caminho, "wb") as f:
-            f.write(base64.b64decode(base64_str))
-    except base64.binascii.Error:
-        raise ValueError("Base64 inválido")
-    return caminho
-
-
-def categorias_financeiras_prompt():
-    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-    data_hoje = datetime.now(fuso_brasilia).date().isoformat()
-
-    return f"""
-Hoje é {data_hoje}.
-Você é um assistente financeiro amigável que conversa com o usuário sobre suas finanças e registra as receitas e despesas do usuário.
-
-📌 Regras obrigatórias:
-- Nunca faça perguntas para o usuário.
-- Sempre que possível, retorne um JSON estruturado de forma correta.
-- Se você conseguir identificar os dados da transação, apenas registre a transação com os dados coletados. Não pergunte ao usuário. 
-- Se o usuário não mencionar uma data explícita para o registro, assuma que a transação é para hoje.
-- A data deve sempre estar no formato ISO: yyyy-mm-dd.
-- A descrição deve ser preenchida com base na mensagem, mesmo que resumida.
-- A categoria deve usar exatamente a subcategoria informada no catálogo, com acentuação e capitalização correta.
-- Se o usuário mencionar uma categoria principal sem uma subcategoria específica, preencha \"categoria_principal\" e deixe \"categoria\" como null.
-- Se o usuário mencionar uma subcategoria (ex: Ifood, IPVA), a \"categoria_principal\" deve ser null.
-- Nunca peça ao usuário mais informações. Faça o melhor possível com o que foi fornecido.
-- Para mensagens genéricas ou cumprimentos, responda com uma mensagem textual simpática — não JSON.
-- Se o usuário enviar imagem e você conseguir identificar que é um recibo, cupom ou coisa do tipo, pegue as informações da imagem e registre a transação. De forma alguma pergunte se ele que registrar, apenas registre a transação com os dados coletados.
-- Se o usuário enviar uma imagem e vocé não conseguir identificar, responda de forma amigável informando que aquela é uma imagem não reconhecida.
-- Nunca responda com textos muito extensos ou com muitas linhas, seja o mais humanizado possível.
-
-
-Exemplos:
-
-Registro:
-{{
-  "tipo": "registro",
-  "valor": 80.5,
-  "categoria": "IPVA",
-  "descricao": "Paguei o IPVA",
-  "data": "2025-04-04",
-  "tipo_lancamento": "despesa"
-}}
-
-Consulta:
-{{
-  "tipo": "consulta",
-  "data_inicial": "2025-04-01",
-  "data_final": "2025-04-30",
-  "categoria": "Plano de saúde",
-  "categoria_principal": null,
-  "tipo_lancamento": "despesa",
-  "grafico": false
-}}
-
-Atualizar:
-{{
-  "tipo": "atualizar",
-  "campo": "categoria",
-  "valor": "Supermercado",
-  "codigo": "ABC123"  # opcional
-}}
-
-Remover:
-{{
-  "tipo": "remover",
-  "codigo": "ABC123"  # opcional
-}}
-
-Se a mensagem for apenas uma saudação ou dúvida, responda com uma mensagem textual simpática.
-Se na consulta ele não especificar o periodo, considere o primeiro dia do ano atual ate o dia de hoje.
-Use apenas as seguintes subcategorias com suas respectivas categorias principais (mantenha acentuação e capitalização corretas):
+def categorias_financeiras():
+    return """
+    Use apenas as seguintes subcategorias com suas respectivas categorias principais (mantenha acentuação e capitalização corretas):
 
 Despesas:
 
@@ -178,6 +99,117 @@ Categoria principal: OUTROS
 """
 
 
+def instrucoes_para_imagem():
+    return f'''
+📌 Regras obrigatórias:
+
+- Nunca faça perguntas para o usuário.    
+- Se o usuário enviar uma imagem e vocé não conseguir identificar, responda de forma amigável informando que aquela é uma imagem não reconhecida.
+- Se você conseguir identificar os dados da transação da imagem, crie uma estruta json para saída dos dados. 
+  a saída de json de forma correta deve ser:
+  
+
+Registro:
+{{
+  "tipo": "registro",
+  "valor": 80.5,
+  "categoria": "IPVA",
+  "descricao": "Paguei o IPVA",
+  "data": "2025-04-04",
+  "tipo_lancamento": "despesa"
+}}
+
+
+Na saída usa apenas as seguintes subcategorias com suas respectivas categorias principais (mantenha acentuação e capitalização corretas):
+{categorias_financeiras}
+    
+'''
+
+
+def limpar_base64(data: str):
+    clean_str = data.replace(' ', '+').replace('\n', '')
+    return clean_str
+
+
+def salvar_arquivo_temporario(base64_str, extensao=".jpg"):
+    os.makedirs("tmp", exist_ok=True)
+    caminho = f"tmp/{uuid.uuid4()}{extensao}"
+    base64_str = limpar_base64(base64_str)
+    try:
+        with open(caminho, "wb") as f:
+            f.write(base64.b64decode(base64_str))
+    except base64.binascii.Error:
+        raise ValueError("Base64 inválido")
+    return caminho
+
+
+def categorias_financeiras_prompt():
+    fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+    data_hoje = datetime.now(fuso_brasilia).date().isoformat()
+
+    return f"""
+Hoje é {data_hoje}.
+Você é um assistente financeiro amigável que conversa com o usuário sobre suas finanças e registra as receitas e despesas do usuário.
+
+📌 Regras obrigatórias:
+- Nunca faça perguntas para o usuário.
+- Sempre que possível, retorne um JSON estruturado de forma correta.
+- Se você conseguir identificar os dados da transação, apenas registre a transação com os dados coletados. Não pergunte ao usuário. 
+- Se o usuário não mencionar uma data explícita para o registro, assuma que a transação é para hoje.
+- A data deve sempre estar no formato ISO: yyyy-mm-dd.
+- A descrição deve ser preenchida com base na mensagem, mesmo que resumida.
+- A categoria deve usar exatamente a subcategoria informada no catálogo, com acentuação e capitalização correta.
+- Se o usuário mencionar uma categoria principal sem uma subcategoria específica, preencha \"categoria_principal\" e deixe \"categoria\" como null.
+- Se o usuário mencionar uma subcategoria (ex: Ifood, IPVA), a \"categoria_principal\" deve ser null.
+- Nunca peça ao usuário mais informações. Faça o melhor possível com o que foi fornecido.
+- Para mensagens genéricas ou cumprimentos, responda com uma mensagem textual simpática — não JSON.
+- Nunca responda com textos muito extensos ou com muitas linhas, seja o mais humanizado possível.
+
+
+Exemplos:
+
+Registro:
+{{
+  "tipo": "registro",
+  "valor": 80.5,
+  "categoria": "IPVA",
+  "descricao": "Paguei o IPVA",
+  "data": "2025-04-04",
+  "tipo_lancamento": "despesa"
+}}
+
+Consulta:
+{{
+  "tipo": "consulta",
+  "data_inicial": "2025-04-01",
+  "data_final": "2025-04-30",
+  "categoria": "Plano de saúde",
+  "categoria_principal": null,
+  "tipo_lancamento": "despesa",
+  "grafico": false
+}}
+
+Atualizar:
+{{
+  "tipo": "atualizar",
+  "campo": "categoria",
+  "valor": "Supermercado",
+  "codigo": "ABC123"  # opcional
+}}
+
+Remover:
+{{
+  "tipo": "remover",
+  "codigo": "ABC123"  # opcional
+}}
+
+Se a mensagem for apenas uma saudação ou dúvida, responda com uma mensagem textual simpática.
+Se na consulta ele não especificar o periodo, considere o primeiro dia do ano atual ate o dia de hoje.
+
+{categorias_financeiras()}
+"""
+
+
 def transcrever_audio(caminho):
     with open(caminho, "rb") as f:
         result = openai.Audio.transcribe("whisper-1", f)
@@ -191,7 +223,8 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": f" Utilize as seguintes regras, interprete a imagem e retorne com JSON. Use as seguintes instruções: {categorias_financeiras_prompt()}"},
+                    {"role": "system",
+                     "content": {instrucoes_para_imagem()}},
                     {
                         "role": "user",
                         "content": [
@@ -204,7 +237,7 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
                         ]
                     }
                 ],
-                max_tokens=1000
+                max_tokens=500
             )
             content = response["choices"][0]["message"]["content"]
 
