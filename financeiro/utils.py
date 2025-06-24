@@ -191,7 +191,7 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": categorias_financeiras_prompt()},
+                    {"role": "system", "content": f" Utilize as seguintes regras, interprete a imagem e retorne com JSON. Use as seguintes instruções: {categorias_financeiras_prompt()}"},
                     {
                         "role": "user",
                         "content": [
