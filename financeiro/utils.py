@@ -115,7 +115,7 @@ def instrucoes_para_imagem():
   a saída de json de forma correta deve ser exatamente o exemplo abaixo.:
   
 
-Registro:
+
 {{
   "tipo": "registro",
   "valor": 80.5,
