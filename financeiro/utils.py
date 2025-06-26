@@ -141,7 +141,7 @@ Texto qualquer:
 
 - Nunca coloque informações a mais além da saída em JSON
 - Seguir a risca o que foi instruido
-
+- Se não conseguir identificar a categoria ou a descrição, passar uma descrição vazia '' e subcategoria 'Sem categoria'
 
     
 '''
