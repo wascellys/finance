@@ -138,6 +138,7 @@ Texto qualquer:
   "tipo_lancamento": "despesa"
 }}
 
+
 - Nunca coloque informações a mais além da saída em JSON
 - Seguir a risca o que foi instruido
 
@@ -244,7 +245,7 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
                 model="gpt-4o",
                 messages=[
                     {"role": "system",
-                     "content": {categorias_financeiras_prompt()}},
+                     "content": instrucoes_para_imagem()},
                     {
                         "role": "user",
                         "content": [
