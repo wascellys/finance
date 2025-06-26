@@ -110,7 +110,7 @@ def instrucoes_para_imagem():
 📌 Regras obrigatórias:
 
 - Nunca faça perguntas para o usuário.    
-- Se o usuário enviar uma imagem e vocé não conseguir identificar, responda de forma amigável informando que aquela é uma imagem não reconhecida.
+- Quando o usuário enviar uma imagem e vocé não conseguir identificar, responda de forma amigável informando que aquela é uma imagem não reconhecida.
 - Se você conseguir identificar os dados da transação da imagem, crie uma estruta json para saída dos dados. 
   a saída de json de forma correta deve ser exatamente o exemplo abaixo.:
   
@@ -128,7 +128,7 @@ Registro:
 
 -Exemplo errado:
 
-Texto qualquer
+Texto qualquer:
 {{
   "tipo": "registro",
   "valor": 80.5,
@@ -137,7 +137,6 @@ Texto qualquer
   "data": "2025-04-04",
   "tipo_lancamento": "despesa"
 }}
-
 
 - Nunca coloque informações a mais além da saída em JSON
 - Seguir a risca o que foi instruido
@@ -245,7 +244,7 @@ def interpretar_imagem_gpt4_vision(image, retries=3):
                 model="gpt-4o",
                 messages=[
                     {"role": "system",
-                     "content": {instrucoes_para_imagem()}},
+                     "content": {categorias_financeiras_prompt()}},
                     {
                         "role": "user",
                         "content": [
